@@ -1,0 +1,403 @@
+generic@phi3:~/NPB3.0-omp-C$ make FT CLASS=B && bin/ft.B  # no bounds checks
+
+   =========================================
+   =      NAS Parallel Benchmarks 2.3      =
+   =      OpenMP C Versions                =
+   =========================================
+
+cd FT; make CLASS=B
+make[1]: Entering directory '/home/generic/NPB3.0-omp-C/FT'
+make[2]: Entering directory '/home/generic/NPB3.0-omp-C/sys'
+make[2]: Nothing to be done for 'all'.
+make[2]: Leaving directory '/home/generic/NPB3.0-omp-C/sys'
+../sys/setparams ft B
+clang  -c -I../common -O3  ft.c
+clang  -o ../bin/ft.B ft.o ../common/c_randdp.o ../common/c_print_results.o ../common/c_timers.o ../common/c_wtime.o  -lm
+make[1]: Leaving directory '/home/generic/NPB3.0-omp-C/FT'
+
+
+ NAS Parallel Benchmarks 3.0 structured OpenMP C version - FT Benchmark
+
+ Size                : 512x256x256
+ Iterations          :          20
+T =     1     Checksum =     5.177643571579e+02     5.077803458597e+02
+T =     2     Checksum =     5.154521291263e+02     5.088249431599e+02
+T =     3     Checksum =     5.146409228650e+02     5.096208912659e+02
+T =     4     Checksum =     5.142378756213e+02     5.101023387619e+02
+T =     5     Checksum =     5.139626667737e+02     5.103976610618e+02
+T =     6     Checksum =     5.137423460082e+02     5.105948019802e+02
+T =     7     Checksum =     5.135547056878e+02     5.107404165783e+02
+T =     8     Checksum =     5.133910925467e+02     5.108576573661e+02
+T =     9     Checksum =     5.132470705390e+02     5.109577278523e+02
+T =    10     Checksum =     5.131197729984e+02     5.110460304483e+02
+T =    11     Checksum =     5.130070319283e+02     5.111252433800e+02
+T =    12     Checksum =     5.129070537032e+02     5.111968077719e+02
+T =    13     Checksum =     5.128182883503e+02     5.112616233064e+02
+T =    14     Checksum =     5.127393733383e+02     5.113203605551e+02
+T =    15     Checksum =     5.126691062021e+02     5.113735928093e+02
+T =    16     Checksum =     5.126064276005e+02     5.114218460548e+02
+T =    17     Checksum =     5.125504076570e+02     5.114656139760e+02
+T =    18     Checksum =     5.125002331721e+02     5.115053595966e+02
+T =    19     Checksum =     5.124551951846e+02     5.115415130407e+02
+T =    20     Checksum =     5.124146770029e+02     5.115744692211e+02
+Result verification successful
+class = B
+
+
+ FT Benchmark Completed
+ Class           =                        B
+ Size            =              512x256x256
+ Iterations      =                       20
+ Threads         =                        1
+ Time in seconds =                   195.63
+ Mop/s total     =                   470.55
+ Operation type  =           floating point
+ Verification    =               SUCCESSFUL
+ Version         =           3.0 structured
+ Compile date    =              11 Aug 2021
+
+ Compile options:
+    CC           = clang
+    CLINK        = clang
+    C_LIB        = -lm
+    C_INC        = -I../common
+    CFLAGS       = -O3 
+    CLINKFLAGS   = (none)
+    RAND         = randdp
+generic@phi3:~/NPB3.0-omp-C$ make FT CLASS=B && bin/ft.B  # upper bound only
+
+   =========================================
+   =      NAS Parallel Benchmarks 2.3      =
+   =      OpenMP C Versions                =
+   =========================================
+
+cd FT; make CLASS=B
+make[1]: Entering directory '/home/generic/NPB3.0-omp-C/FT'
+make[2]: Entering directory '/home/generic/NPB3.0-omp-C/sys'
+make[2]: Nothing to be done for 'all'.
+make[2]: Leaving directory '/home/generic/NPB3.0-omp-C/sys'
+../sys/setparams ft B
+clang  -c -I../common -O3  ft.c
+clang  -o ../bin/ft.B ft.o ../common/c_randdp.o ../common/c_print_results.o ../common/c_timers.o ../common/c_wtime.o  -lm
+make[1]: Leaving directory '/home/generic/NPB3.0-omp-C/FT'
+
+
+ NAS Parallel Benchmarks 3.0 structured OpenMP C version - FT Benchmark
+
+ Size                : 512x256x256
+ Iterations          :          20
+T =     1     Checksum =     5.177643571579e+02     5.077803458597e+02
+T =     2     Checksum =     5.154521291263e+02     5.088249431599e+02
+T =     3     Checksum =     5.146409228650e+02     5.096208912659e+02
+T =     4     Checksum =     5.142378756213e+02     5.101023387619e+02
+T =     5     Checksum =     5.139626667737e+02     5.103976610618e+02
+T =     6     Checksum =     5.137423460082e+02     5.105948019802e+02
+T =     7     Checksum =     5.135547056878e+02     5.107404165783e+02
+T =     8     Checksum =     5.133910925467e+02     5.108576573661e+02
+T =     9     Checksum =     5.132470705390e+02     5.109577278523e+02
+T =    10     Checksum =     5.131197729984e+02     5.110460304483e+02
+T =    11     Checksum =     5.130070319283e+02     5.111252433800e+02
+T =    12     Checksum =     5.129070537032e+02     5.111968077719e+02
+T =    13     Checksum =     5.128182883503e+02     5.112616233064e+02
+T =    14     Checksum =     5.127393733383e+02     5.113203605551e+02
+T =    15     Checksum =     5.126691062021e+02     5.113735928093e+02
+T =    16     Checksum =     5.126064276005e+02     5.114218460548e+02
+T =    17     Checksum =     5.125504076570e+02     5.114656139760e+02
+T =    18     Checksum =     5.125002331721e+02     5.115053595966e+02
+T =    19     Checksum =     5.124551951846e+02     5.115415130407e+02
+T =    20     Checksum =     5.124146770029e+02     5.115744692211e+02
+Result verification successful
+class = B
+
+
+ FT Benchmark Completed
+ Class           =                        B
+ Size            =              512x256x256
+ Iterations      =                       20
+ Threads         =                        1
+ Time in seconds =                   234.81
+ Mop/s total     =                   392.04
+ Operation type  =           floating point
+ Verification    =               SUCCESSFUL
+ Version         =           3.0 structured
+ Compile date    =              11 Aug 2021
+
+ Compile options:
+    CC           = clang
+    CLINK        = clang
+    C_LIB        = -lm
+    C_INC        = -I../common
+    CFLAGS       = -O3 
+    CLINKFLAGS   = (none)
+    RAND         = randdp
+generic@phi3:~/NPB3.0-omp-C$ make FT CLASS=B && bin/ft.B  # upper and lower bounds
+
+   =========================================
+   =      NAS Parallel Benchmarks 2.3      =
+   =      OpenMP C Versions                =
+   =========================================
+
+cd FT; make CLASS=B
+make[1]: Entering directory '/home/generic/NPB3.0-omp-C/FT'
+make[2]: Entering directory '/home/generic/NPB3.0-omp-C/sys'
+make[2]: Nothing to be done for 'all'.
+make[2]: Leaving directory '/home/generic/NPB3.0-omp-C/sys'
+../sys/setparams ft B
+clang  -c -I../common -O3  ft.c
+clang  -o ../bin/ft.B ft.o ../common/c_randdp.o ../common/c_print_results.o ../common/c_timers.o ../common/c_wtime.o  -lm
+make[1]: Leaving directory '/home/generic/NPB3.0-omp-C/FT'
+
+
+ NAS Parallel Benchmarks 3.0 structured OpenMP C version - FT Benchmark
+
+ Size                : 512x256x256
+ Iterations          :          20
+T =     1     Checksum =     5.177643571579e+02     5.077803458597e+02
+T =     2     Checksum =     5.154521291263e+02     5.088249431599e+02
+T =     3     Checksum =     5.146409228650e+02     5.096208912659e+02
+T =     4     Checksum =     5.142378756213e+02     5.101023387619e+02
+T =     5     Checksum =     5.139626667737e+02     5.103976610618e+02
+T =     6     Checksum =     5.137423460082e+02     5.105948019802e+02
+T =     7     Checksum =     5.135547056878e+02     5.107404165783e+02
+T =     8     Checksum =     5.133910925467e+02     5.108576573661e+02
+T =     9     Checksum =     5.132470705390e+02     5.109577278523e+02
+T =    10     Checksum =     5.131197729984e+02     5.110460304483e+02
+T =    11     Checksum =     5.130070319283e+02     5.111252433800e+02
+T =    12     Checksum =     5.129070537032e+02     5.111968077719e+02
+T =    13     Checksum =     5.128182883503e+02     5.112616233064e+02
+T =    14     Checksum =     5.127393733383e+02     5.113203605551e+02
+T =    15     Checksum =     5.126691062021e+02     5.113735928093e+02
+T =    16     Checksum =     5.126064276005e+02     5.114218460548e+02
+T =    17     Checksum =     5.125504076570e+02     5.114656139760e+02
+T =    18     Checksum =     5.125002331721e+02     5.115053595966e+02
+T =    19     Checksum =     5.124551951846e+02     5.115415130407e+02
+T =    20     Checksum =     5.124146770029e+02     5.115744692211e+02
+Result verification successful
+class = B
+
+
+ FT Benchmark Completed
+ Class           =                        B
+ Size            =              512x256x256
+ Iterations      =                       20
+ Threads         =                        1
+ Time in seconds =                   260.98
+ Mop/s total     =                   352.73
+ Operation type  =           floating point
+ Verification    =               SUCCESSFUL
+ Version         =           3.0 structured
+ Compile date    =              11 Aug 2021
+
+ Compile options:
+    CC           = clang
+    CLINK        = clang
+    C_LIB        = -lm
+    C_INC        = -I../common
+    CFLAGS       = -O3 
+    CLINKFLAGS   = (none)
+    RAND         = randdp
+diff --git a/FT/ft.c b/FT/ft.c
+index 374c3d6..6ad5dee 100644
+--- a/FT/ft.c
++++ b/FT/ft.c
+@@ -36,6 +36,49 @@
+ /* global variables */
+ #include "global.h"
+ 
++// for overhead checks
++void *region_lower_bound();
++void *region_upper_bound();
++
++
++// actual check
++#define DO_CHECK         1
++#define CHECK_UPPER_ONLY 0
++
++#if DO_CHECK
++#define CHECK(a,b,c) check(a,b,c)
++#else
++#define CHECK(a,b,c)
++#endif
++
++
++#define BRANCH_NOT_TAKEN_HINT ".byte 0x2e"
++#define BRANCH_TAKEN_HINT     ".byte 0x3e"
++
++#define HINT_BRANCH(INST, HINT) HINT "\n" INST
++
++// generate an invalid opcode exception when out of bounds
++static __attribute__((always_inline)) inline void check(void *ptr, void *lb, void *ub) 
++{
++#if CHECK_UPPER_ONLY 
++  __asm__ __volatile__ (" cmpq %1, %0; "
++			HINT_BRANCH("jbe bounds_ok%=; ", BRANCH_TAKEN_HINT)
++			" ud2; "
++			"bounds_ok%=: ; " : : "r"(ptr), "r"(ub) : );
++#else // full check
++  __asm__ __volatile__ (" cmpq %1, %0; "
++			HINT_BRANCH(" jbe ub_ok%=; ", BRANCH_TAKEN_HINT)
++			" ud2; "
++			"ub_ok%=: ; "
++			" cmpq %2, %0; " 
++			HINT_BRANCH(" jae bounds_ok%=; ", BRANCH_TAKEN_HINT)
++			" ud2 ; "
++			"bounds_ok%=: ; " : : "r"(ptr), "r"(ub), "r"(lb) : );
++#endif
++}
++		       
++
++
+ /* function declarations */
+ static void evolve(dcomplex u0[NZ][NY][NX], dcomplex u1[NZ][NY][NX],
+ 		   int t, int indexmap[NZ][NY][NX], int d[3]);
+@@ -234,10 +277,17 @@ c-------------------------------------------------------------------*/
+ 
+     int i, j, k;
+ 
++    void *lb = region_lower_bound();
++    void *ub = region_upper_bound();
++    
++    
+ #pragma omp parallel for default(shared) private(i,j,k)   
+     for (k = 0; k < d[2]; k++) {
+ 	for (j = 0; j < d[1]; j++) {
+             for (i = 0; i < d[0]; i++) {
++	      CHECK(&u1[k][j][i],lb,ub);
++	      CHECK(&u0[k][j][i],lb,ub);
++	      CHECK(&ex[t*indexmap[k][j][i]],lb,ub);
+ 	      crmul(u1[k][j][i], u0[k][j][i], ex[t*indexmap[k][j][i]]);
+ 	    }
+ 	}
+@@ -509,6 +559,9 @@ c-------------------------------------------------------------------*/
+     int logd[3];
+     int i, j, k, jj;
+ 
++    void *lb = region_lower_bound();
++    void *ub = region_upper_bound();
++
+     for (i = 0; i < 3; i++) {
+ 	logd[i] = ilog2(d[i]);
+     }
+@@ -782,12 +835,16 @@ c-------------------------------------------------------------------*/
+     lj = 2 * lk;
+     ku = li;
+ 
++    void *lb = region_lower_bound();
++    void *ub = region_upper_bound();
++
+     for (i = 0; i < li; i++) {
+       
+         i11 = i * lk;
+         i12 = i11 + n1;
+         i21 = i * lj;
+         i22 = i21 + lk;
++	CHECK(&u[ku+i],lb,ub);
+         if (is >= 1) {
+           u1.real = u[ku+i].real;
+           u1.imag = u[ku+i].imag;
+@@ -803,6 +860,9 @@ c-------------------------------------------------------------------*/
+ 	    for (j = 0; j < ny; j++) {
+ 		double x11real, x11imag;
+ 		double x21real, x21imag;
++		CHECK(&x[i11+k][j],lb,ub);
++		CHECK(&x[i12+k][j],lb,ub);
++		CHECK(&y[i21+k][j],lb,ub);
+ 		x11real = x[i11+k][j].real;
+ 		x11imag = x[i11+k][j].imag;
+ 		x21real = x[i12+k][j].real;
+diff --git a/common/c_timers.c b/common/c_timers.c
+index 995d5d6..6c7118d 100644
+--- a/common/c_timers.c
++++ b/common/c_timers.c
+@@ -5,6 +5,7 @@
+ void wtime( double * );
+ 
+ 
++
+ /*****************************************************************/
+ /******         E  L  A  P  S  E  D  _  T  I  M  E          ******/
+ /*****************************************************************/
+@@ -59,3 +60,16 @@ double timer_read( int n )
+     return( elapsed[n] );
+ }
+ 
++
++// hack for getting a region
++
++void *region_lower_bound()
++{
++  return 0;
++}
++
++void *region_upper_bound()
++{
++  return (void*)(long)-1;
++}
++
+clang version 10.0.0-4ubuntu1 
+Target: x86_64-pc-linux-gnu
+Thread model: posix
+InstalledDir: /usr/bin
+Found candidate GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/9
+Selected GCC installation: /usr/bin/../lib/gcc/x86_64-linux-gnu/9
+Candidate multilib: .;@m64
+Selected multilib: .;@m64
+Linux phi3 5.8.0-43-generic #49~20.04.1-Ubuntu SMP Fri Feb 5 09:57:56 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
+Architecture:                    x86_64
+CPU op-mode(s):                  32-bit, 64-bit
+Byte Order:                      Little Endian
+Address sizes:                   46 bits physical, 48 bits virtual
+CPU(s):                          256
+On-line CPU(s) list:             0-255
+Thread(s) per core:              4
+Core(s) per socket:              64
+Socket(s):                       1
+NUMA node(s):                    2
+Vendor ID:                       GenuineIntel
+CPU family:                      6
+Model:                           87
+Model name:                      Intel(R) Xeon Phi(TM) CPU 7210 @ 1.30GHz
+Stepping:                        1
+CPU MHz:                         1112.003
+CPU max MHz:                     1500.0000
+CPU min MHz:                     1000.0000
+BogoMIPS:                        2593.88
+L1d cache:                       2 MiB
+L1i cache:                       2 MiB
+L2 cache:                        32 MiB
+NUMA node0 CPU(s):               0-255
+NUMA node1 CPU(s):               
+Vulnerability Itlb multihit:     Not affected
+Vulnerability L1tf:              Not affected
+Vulnerability Mds:               Vulnerable: Clear CPU buffers attempted, no microcode; SMT mitigated
+Vulnerability Meltdown:          Mitigation; PTI
+Vulnerability Spec store bypass: Not affected
+Vulnerability Spectre v1:        Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:        Mitigation; Full generic retpoline, STIBP disabled, RSB filling
+Vulnerability Srbds:             Not affected
+Vulnerability Tsx async abort:   Not affected
+Flags:                           fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl est tm2 ssse3 fma cx16 xtpr pdcm sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch ring3mwait cpuid_fault epb pti fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms avx512f rdseed adx avx512pf avx512er avx512cd xsaveopt dtherm ida arat pln pts
+Filesystem      Size  Used Avail Use% Mounted on
+udev             40G     0   40G   0% /dev
+tmpfs           7.9G  3.4M  7.9G   1% /run
+/dev/sda3       366G  7.6G  340G   3% /
+tmpfs            40G     0   40G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+tmpfs            40G     0   40G   0% /sys/fs/cgroup
+/dev/loop0       56M   56M     0 100% /snap/core18/1988
+/dev/loop1      219M  219M     0 100% /snap/gnome-3-34-1804/66
+/dev/loop2       65M   65M     0 100% /snap/gtk-common-themes/1514
+/dev/loop4       52M   52M     0 100% /snap/snap-store/518
+/dev/sda1        46G  258M   44G   1% /boot
+/dev/loop5       33M   33M     0 100% /snap/snapd/12398
+/dev/loop6       56M   56M     0 100% /snap/core18/2074
+/dev/loop7       51M   51M     0 100% /snap/snap-store/547
+/dev/loop8       66M   66M     0 100% /snap/gtk-common-themes/1515
+/dev/loop9      219M  219M     0 100% /snap/gnome-3-34-1804/72
+tmpfs           7.9G   40K  7.9G   1% /run/user/125
+/dev/loop10      33M   33M     0 100% /snap/snapd/12704
+tmpfs           7.9G  8.0K  7.9G   1% /run/user/1000
+              total        used        free      shared  buff/cache   available
+Mem:           78Gi       2.6Gi        69Gi        19Mi       6.6Gi        75Gi
+Swap:          46Gi          0B        46Gi

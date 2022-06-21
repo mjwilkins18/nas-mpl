@@ -1,3 +1,3 @@
 [submodule "mpl"]
-	path = mpl
+	path = tool_src/mpl
 	url = git@github.com:MPLLang/mpl.git

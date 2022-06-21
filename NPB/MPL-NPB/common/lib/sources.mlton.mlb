@@ -1,0 +1,23 @@
+$(SML_LIB)/basis/basis.mlb
+
+local
+  $(SML_LIB)/basis/build/sources.mlb
+in
+  structure ArrayExtra = Array
+end
+ForkJoin.mlton.sml
+
+CommandLineArgs.sml
+Util.sml
+SeqBasis.sml
+Seq.sml
+BinarySearch.sml
+Merge.sml
+Quicksort.sml
+Mergesort.sml
+TreeMatrix.sml
+
+SampleSort.sml
+CountingSort.sml
+
+Geometry2D.sml
