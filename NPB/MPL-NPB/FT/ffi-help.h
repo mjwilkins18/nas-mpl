@@ -1,5 +1,5 @@
-#ifndef __FTB_ML_H__
-#define __FTB_ML_H__
+#ifndef __FTS_ML_H__
+#define __FTS_ML_H__
 
 /* Copyright (C) 2004-2007 Henry Cejtin, Matthew Fluet, Suresh
  *    Jagannathan, and Stephen Weeks.
@@ -132,23 +132,23 @@ typedef Pointer Objptr;
 
 #endif /* _MLTON_EXPORT_H_ */
 
-#if !defined(PART_OF_FTB) && \
-    !defined(STATIC_LINK_FTB) && \
-    !defined(DYNAMIC_LINK_FTB)
-#define PART_OF_FTB
+#if !defined(PART_OF_FTS) && \
+    !defined(STATIC_LINK_FTS) && \
+    !defined(DYNAMIC_LINK_FTS)
+#define PART_OF_FTS
 #endif
 
-#if defined(PART_OF_FTB)
+#if defined(PART_OF_FTS)
 #define MLLIB_PRIVATE(x) PRIVATE x
 #define MLLIB_PUBLIC(x) PUBLIC x
-#elif defined(STATIC_LINK_FTB)
+#elif defined(STATIC_LINK_FTS)
 #define MLLIB_PRIVATE(x)
 #define MLLIB_PUBLIC(x) PUBLIC x
-#elif defined(DYNAMIC_LINK_FTB)
+#elif defined(DYNAMIC_LINK_FTS)
 #define MLLIB_PRIVATE(x)
 #define MLLIB_PUBLIC(x) EXTERNAL x
 #else
-#error Must specify linkage for ftB
+#error Must specify linkage for ftS
 #define MLLIB_PRIVATE(x)
 #define MLLIB_PUBLIC(x)
 #endif
@@ -166,4 +166,4 @@ MLLIB_PUBLIC(void Parallel_run ();)
 }
 #endif
 
-#endif /* __FTB_ML_H__ */
+#endif /* __FTS_ML_H__ */
