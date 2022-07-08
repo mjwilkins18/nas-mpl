@@ -65,7 +65,7 @@
 /*************/
 #if CLASS == 'S'
 #define  TOTAL_KEYS_LOG_2    16
-#define  MAX_KEY_LOG_2       11
+#define  MAX_KEY_LOG_2       13
 #define  NUM_BUCKETS_LOG_2   9
 #endif
 
@@ -303,6 +303,10 @@ void	create_seq( double seed, double a )
 {
 	double x;
 	int    i, j, k;
+	
+
+	MAX_KEY = max_key;
+	printf("Garrett here, max_key is: %d\n", MAX_KEY);
 
         k = MAX_KEY/4;
 
@@ -314,7 +318,8 @@ void	create_seq( double seed, double a )
 	    x += randlc(&seed, &a);  
 
             key_array[i] = k*x;
-	}
+	}	
+	printf("Attempting to access array: %d", key_array[0]);
 }
 
 
