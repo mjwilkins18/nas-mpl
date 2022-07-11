@@ -1,5 +1,5 @@
-#ifndef __ISS_ML_H__
-#define __ISS_ML_H__
+#ifndef __V2_ML_H__
+#define __V2_ML_H__
 
 /* Copyright (C) 2004-2007 Henry Cejtin, Matthew Fluet, Suresh
  *    Jagannathan, and Stephen Weeks.
@@ -132,23 +132,23 @@ typedef Pointer Objptr;
 
 #endif /* _MLTON_EXPORT_H_ */
 
-#if !defined(PART_OF_ISS) && \
-    !defined(STATIC_LINK_ISS) && \
-    !defined(DYNAMIC_LINK_ISS)
-#define PART_OF_ISS
+#if !defined(PART_OF_V2) && \
+    !defined(STATIC_LINK_V2) && \
+    !defined(DYNAMIC_LINK_V2)
+#define PART_OF_V2
 #endif
 
-#if defined(PART_OF_ISS)
+#if defined(PART_OF_V2)
 #define MLLIB_PRIVATE(x) PRIVATE x
 #define MLLIB_PUBLIC(x) PUBLIC x
-#elif defined(STATIC_LINK_ISS)
+#elif defined(STATIC_LINK_V2)
 #define MLLIB_PRIVATE(x)
 #define MLLIB_PUBLIC(x) PUBLIC x
-#elif defined(DYNAMIC_LINK_ISS)
+#elif defined(DYNAMIC_LINK_V2)
 #define MLLIB_PRIVATE(x)
 #define MLLIB_PUBLIC(x) EXTERNAL x
 #else
-#error Must specify linkage for isS
+#error Must specify linkage for v2
 #define MLLIB_PRIVATE(x)
 #define MLLIB_PUBLIC(x)
 #endif
@@ -166,4 +166,4 @@ MLLIB_PUBLIC(void Parallel_run ();)
 }
 #endif
 
-#endif /* __ISS_ML_H__ */
+#endif /* __V2_ML_H__ */
