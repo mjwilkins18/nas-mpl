@@ -17,7 +17,6 @@ typedef int boolean;
 
 
 #define SEED 314159265.0
-#define A 1220703125.0
 #define PI 3.141592653589793238
 #define ALPHA 1.0e-6
 
@@ -91,7 +90,6 @@ void makea(
 /*--------------------------------------------------------------------
 c      nonzer is approximately  (int(sqrt(nnza /n)));
 c-------------------------------------------------------------------*/
-	printf("int64_t SIZE: %d", sizeof(int));
     double size, ratio, scale;
     int64_t jcol;
 
@@ -162,6 +160,21 @@ c           (v and iv are used as  workspace)
 c---------------------------------------------------------------------*/
     sparse(a, colidx, rowstr, n, arow, acol, aelt,
 	   firstrow, lastrow, v, &(iv[0]), &(iv[n]), nnza);
+
+
+/*---------------------------------------------------------------------
+c  Note: as a result of this call to makea:
+c        values of j used in indexing rowstr go from 1 --> lastrow-firstrow+1
+c        values of colidx which are col indexes go from firstcol --> lastcol
+c        So:
+c        Shift the col index vals from actual (firstcol --> lastcol ) 
+c        to local, i.e., (1 --> lastcol-firstcol+1)
+c---------------------------------------------------------------------*/
+	for (int64_t j = 1; j <= lastrow - firstrow + 1; j++) {
+		for (int64_t k = rowstr[j]; k < rowstr[j+1]; k++) {
+			colidx[k] = colidx[k] - firstcol + 1;
+		}
+    }
 }
 
 /*---------------------------------------------------
@@ -361,7 +374,7 @@ c-------------------------------------------------------------------*/
 * scale a double precision number x in (0,1) by a power of 2 and chop it
 *---------------------------------------------------------------------*/
 static int64_t icnvrt(double x, int64_t ipwr2) {
-    return ((int)(ipwr2 * x));
+    return ((int64_t)(ipwr2 * x));
 }
 
 /*--------------------------------------------------------------------
@@ -433,7 +446,7 @@ double randlc(double *x, double a)
 	c   Break A into two parts such that A = 2^23 * A1 + A2.
 	c---------------------------------------------------------------------*/
 	t1 = r23 * a;
-	a1 = (int)t1;
+	a1 = (int64_t)t1;
 	a2 = a - t23 * a1;
 
 	/*c---------------------------------------------------------------------
@@ -442,13 +455,13 @@ double randlc(double *x, double a)
 	c   X = 2^23 * Z + A2 * X2  (mod 2^46).
 	c---------------------------------------------------------------------*/
 	t1 = r23 * (*x);
-	x1 = (int)t1;
+	x1 = (int64_t)t1;
 	x2 = (*x) - t23 * x1;
 	t1 = a1 * x2 + a2 * x1;
-	t2 = (int)(r23 * t1);
+	t2 = (int64_t)(r23 * t1);
 	z = t1 - t23 * t2;
 	t3 = t23 * z + a2 * x2;
-	t4 = (int)(r46 * t3);
+	t4 = (int64_t)(r46 * t3);
 	(*x) = t3 - t46 * t4;
 
 	return (r46 * (*x));
@@ -493,7 +506,7 @@ void vranlc(int64_t n, double *x_seed, double a, double y[])
 	c   Break A into two parts such that A = 2^23 * A1 + A2.
 	c---------------------------------------------------------------------*/
 	t1 = r23 * a;
-	a1 = (int)t1;
+	a1 = (int64_t)t1;
 	a2 = a - t23 * a1;
 	x = *x_seed;
 
@@ -509,13 +522,13 @@ void vranlc(int64_t n, double *x_seed, double a, double y[])
 		c   X = 2^23 * Z + A2 * X2  (mod 2^46).
 		c---------------------------------------------------------------------*/
 		t1 = r23 * x;
-		x1 = (int)t1;
+		x1 = (int64_t)t1;
 		x2 = x - t23 * x1;
 		t1 = a1 * x2 + a2 * x1;
-		t2 = (int)(r23 * t1);
+		t2 = (int64_t)(r23 * t1);
 		z = t1 - t23 * t2;
 		t3 = t23 * z + a2 * x2;
-		t4 = (int)(r46 * t3);
+		t4 = (int64_t)(r46 * t3);
 		x = t3 - t46 * t4;
 		y[i] = r46 * x;
 	}

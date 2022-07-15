@@ -115,14 +115,14 @@ fun do_cg_iter(iter : int,
 					Array.update(x, j, !norm_temp12 * zj)
 				end	
 			)
-		;	SHIFT + 1.0 / !norm_temp11 (* zeta *)
+		;	SHIFT + (1.0 / !norm_temp11) (* zeta *)
 		end
 
 
 
 (* ------- MAIN ------ *)
 val _ = dbg("STARTING MAIN\n")
-val zeta = randlc(TRAN, !AMULT)
+val zeta = randlc(TRAN, AMULT)
 
 val colidx : int array = Array.array(NZ+1, 0)
 val rowstr : int array = Array.array(NA+2, 0)
@@ -140,9 +140,16 @@ val r : real array = Array.array(NA+2+1, 0.0)
 val p : real array = Array.array(NA+2+1, 0.0)
 
 
+val _ = print ("\n\n NAS Parallel Benchmarks 3.0 structured MPL version" ^ 
+		" - CG Benchmark\n")
+val _ = print (" Size                : " ^ padStr(istr(NA), 11) ^ "\n")
+val _ = print (" Iterations          : " ^ padStr(istr(NITER), 5)^"\n")
+
+
+
 val _ = dbg("PRE-CREATE\n")
 (* TODO: just edit makea to allocate its own damn memory *)
-val _ = create_data(NA, NZ, a, colidx, rowstr, NONZER, 1, NA, 1, NA, RCOND, arow, acol, aelt, v, iv, SHIFT, TRAN, !AMULT)
+val _ = create_data(NA, NZ, a, colidx, rowstr, NONZER, FIRSTROW, LASTROW, FIRSTCOL, LASTCOL, RCOND, arow, acol, aelt, v, iv, SHIFT, TRAN, AMULT)
 
 (* Necessary: edit makea to do the index shifting and all that jazz  *)
 

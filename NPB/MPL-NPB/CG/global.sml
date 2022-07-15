@@ -48,7 +48,7 @@ val for = Util.for
 
 (* GLOBAL VARIABLES *)
 val TRAN : real ref  = ref 314159265.0;
-val AMULT : real ref  = ref 1220703125.0;
+val AMULT : real  = 1220703125.0;
 
 
 
