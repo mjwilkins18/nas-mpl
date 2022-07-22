@@ -62,11 +62,14 @@ double *A;
 
 
 
-void	create_seq( double seed, double a, 
-			int MAX_KEY, int NUM_KEYS, int* Key_array )
+void	create_seq( long MAX_KEY, long NUM_KEYS, int* Key_array )
 {
+
+	double seed = 314159265.00;
+	double a = 1220703125.00; 
 	double x;
-	int    i, j, k;	
+	int  i;
+	long k;	
 
         k = MAX_KEY/4;
 
@@ -101,8 +104,10 @@ void full_verify(int NUM_KEYS, int* key_array,
 
     j = 0;
     for( i=1; i<NUM_KEYS; i++ )
-        if( key_array[i-1] > key_array[i] )
+        if( key_array[i-1] > key_array[i] ){
+	    //printf("Error when comparing %d > %d\n", key_array[i-1], key_array[i]);
             j++;
+	}
 	
 	
     if( j != 0 )
@@ -341,4 +346,172 @@ void rank(      int iteration,
         key_buff_ptr_global = key_buff1;
 
   } /* end master */
+}
+
+
+
+
+
+
+void partial_verification(
+int iteration,
+char CLASS,
+long TEST_ARRAY_SIZE,
+long NUM_KEYS,
+int* key_buff1,
+int* test_rank_array,
+int* partial_verify_vals,
+long* pv
+){
+
+
+for(int g = 0; g  < TEST_ARRAY_SIZE; g++) {
+printf("%d: %ld\n", g, partial_verify_vals[g]);
+}
+
+
+
+long i;
+long k;
+long* passed_verification = pv;
+
+
+/* This is the partial verify test section */
+/* Observe that test_rank_array vals are   */
+/* shifted differently for different cases */
+    for( i=0; i<TEST_ARRAY_SIZE; i++ )
+    {                                             
+        k = partial_verify_vals[i];          /* test vals were put here */
+        if( 0 <= k  &&  k <= NUM_KEYS-1 )
+            switch( CLASS )
+            {
+                case 'S':
+                    if( i <= 2 )
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]+iteration )
+                        {
+				
+			    printf("comparing %ld != %ld\n", key_buff1[k-1], test_rank_array[i]+iteration);
+                            printf("k - 1 is %ld\n", (k-1));
+
+				printf( "1: Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "2: Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'W':
+                    if( i < 2 )
+                    {
+                        if( key_buff1[k-1] != 
+                                          test_rank_array[i]+(iteration-2) )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'A':
+                    if( i <= 2 )
+        	    {
+                        if( key_buff1[k-1] != 
+                                          test_rank_array[i]+(iteration-1) )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+        	    }
+                    else
+                    {
+                        if( key_buff1[k-1] != 
+                                          test_rank_array[i]-(iteration-1) )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'B':
+                    if( i == 1 || i == 2 || i == 4 )
+        	    {
+                        if( key_buff1[k-1] != test_rank_array[i]+iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+        	    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'C':
+                    if( i <= 2 )
+        	    {
+                        if( key_buff1[k-1] != test_rank_array[i]+iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+        	    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+            }        
+    }
 } 
