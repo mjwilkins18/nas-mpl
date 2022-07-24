@@ -390,29 +390,23 @@ int* passed_verification = pv;
                     {
                         if( key_buff1[k-1] != test_rank_array[i]+iteration )
                         {
-				
-			    //printf("comparing %ld != %ld\n", key_buff1[k-1], test_rank_array[i]+iteration);
-                            //printf("k - 1 is %ld\n", (k-1));
-
-				printf( "1: Failed partial verification: "
+				printf( "Failed partial verification: "
                                   "iteration %d, test key %d\n", 
                                    iteration, i );
                         }
                         else
                             (*passed_verification)++;
-				printf("inc\n");
                     }
                     else
                     {
                         if( key_buff1[k-1] != test_rank_array[i]-iteration )
                         {
-                            printf( "2: Failed partial verification: "
+                            printf( "Failed partial verification: "
                                   "iteration %d, test key %d\n", 
                                    iteration, i );
                         }
                         else
                             (*passed_verification)++;
-				printf("inc\n");
                     }
                     break;
                 case 'W':

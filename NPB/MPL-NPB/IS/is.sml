@@ -1,6 +1,5 @@
 val args = CommandLine.arguments()
 val class = List.hd (  String.explode(  List.hd  args  )  ) : char
-(*val _ = print("Starting Class: " ^ Char.toString class ^ "\n")*)
 
 
 fun total_keys_assigner(class) =
@@ -36,12 +35,6 @@ fun num_buckets_assigner(class) =
 val num_buckets_log_2 = num_buckets_assigner class
 
 
-(*
-val _ = print("Total Keys Log 2: " ^ Int.toString total_keys_log_2 ^ "\n");
-val _ = print("Max Key Log 2: " ^ Int.toString max_key_log_2 ^ "\n");
-val _ = print("Num Buckets Log 2: " ^ Int.toString num_buckets_log_2 ^ "\n");
-*)
-
 fun lshift n =
     if n = 0 then 1
     else 2 * lshift( n - 1 )
@@ -51,12 +44,6 @@ val max_key = lshift max_key_log_2
 val num_buckets = lshift num_buckets_log_2
 val num_keys = total_keys
 val size_of_buffers = num_keys
-
-(*
-val _ = print("Total Keys: " ^ Int.toString total_keys ^ "\n")
-val _ = print("Max Key: " ^ Int.toString max_key ^ "\n")
-val _ = print("Num Buckets: " ^ Int.toString num_buckets ^ "\n")
-*)
 
 
 val passed_verification = ref 0
@@ -91,7 +78,6 @@ val b_test_rank_array = Array.fromList [ 33422937, 10244, 59149, 33135281, 99 ]
 
 val c_test_index_array = Array.fromList [ 44172927, 72999161, 74326391, 129606274, 21736814 ]
 val c_test_rank_array = Array.fromList [ 61147, 882988, 266290, 133997595, 133525895 ]
-
 
 
 fun forLoop((i : int, j : int), f : int -> unit) : unit = 
@@ -138,27 +124,13 @@ fun test_rank_array_init (i : int) : unit =
 	
 val _ = forLoop((0,test_array_size), test_rank_array_init)
 
-val _ = timer_clear(0)
 
-(*
-val _ = print("key_array[0] before Create_seq call: " ^ 
-	      Int.toString ( Array.sub (key_array, 0)) ^
-	      "\n")
-*)
+val _ = timer_clear(0)
 
 
 val ffi_create_seq = _import "create_seq": int * int * int array-> unit;
 
 val _ = ffi_create_seq(max_key, num_keys, key_array)
-(*
-val _ = forLoop((0, 100), fn i => print(istr(Array.sub(key_array, i)) ^ "\n"));
-*)
-
-(*
-val _ = print("key_array[0] after Create_seq call: " ^ 
-	      Int.toString ( Array.sub (key_array, 0)) ^
-	      "\n")
-*)
 
 
 val ffi_rank = _import "rank":  int * int * int * int array * int * int * int *
@@ -202,7 +174,9 @@ fun non_s_printout() : unit =
 
 val _  = non_s_printout
 
+
 val _ = timer_start(0)
+
 
 fun rank_loop(x: int, pv : int ref) : unit = 
 	let val _ = 
@@ -219,22 +193,9 @@ val _ = forLoopArg((1, max_iterations + 1), rank_loop, passed_verification)
 *)
 
 
-
-
-
-
-(* From here we define a version of rank which is in sml *)
-
-
 fun rank(iteration : int) : unit = 
     let
 	val prv_buff1 = Array.array(max_key, 0)
-	
-	fun set_ptr_global(i : int) = 
-		if (i = max_iterations)
-		then key_buff1
-		else key_buff_ptr_global
-	
 	
     in (
 	
@@ -255,30 +216,14 @@ fun rank(iteration : int) : unit =
 	forLoop((0, test_array_size), load_partial_array);
 	forLoop((0, max_key), clear_work_array)
 	)
-	end;(*
-	print("partial_verify_vals\n");
-	forLoop((0, test_array_size), fn i => print(istr(Array.sub(partial_verify_vals, i)) ^ "\n"));
-	*)
+	end;
 	
-	(*
-	print("test_index_array\n");
-	forLoop((0, test_array_size), fn i => print(istr(Array.sub(test_index_array, i)) ^ "\n"));
-*)
 	(* Barrier *)
 
-	(*
-	print("\n3\n\n\n\n");
-	forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "  "));
-	*)
 
 	(* prv zeroing done above *)
 	
-	(*
-	print("\nJUSTIN\n\n\n\n");
-	forLoop((0, max_key), fn i => print(istr(Array.sub(prv_buff1, i)) ^ "  "));
-	*)
 
-	
 	(* For Nowait *)
 	let	
 	fun rank_all_keys (i : int) = 
@@ -286,7 +231,8 @@ fun rank(iteration : int) : unit =
 	    let
 	    in(
 		Array.update(key_buff2, i, Array.sub(key_array, i));
-		Array.update(prv_buff1, Array.sub(key_buff2, i), (Array.sub(prv_buff1, Array.sub(key_buff2, i)) + 1))
+		Array.update(prv_buff1, Array.sub(key_buff2, i),
+				 (Array.sub(prv_buff1, Array.sub(key_buff2, i)) + 1))
 	    )
 	    end	
 	
@@ -295,11 +241,6 @@ fun rank(iteration : int) : unit =
 	)
 	end;
 	
-	(*
-	print("\nJUSTIN\n\n\n\n");
-	forLoop((0, max_key), fn i => print(istr(Array.sub(prv_buff1, i)) ^ "  "));
-	*)
-
 
 	(* No OMP Signature *)
 	let
@@ -318,16 +259,6 @@ fun rank(iteration : int) : unit =
 	)
 	end;
    
-	(*
-	print("\nGWEN\n\n\n\n");
-	forLoop((0, max_key), fn i => print(istr(Array.sub(prv_buff1, i)) ^ "  "));
-	*)
-
-
-	(*
-	print("\n69420\n\n\n\n");
-	forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "  "));
-	*)
 
 	(* Critical Section *) (* something in this section is causing key_buff to get fucked up*)
 	let
@@ -337,7 +268,6 @@ fun rank(iteration : int) : unit =
 		val prv_val = Array.sub(prv_buff1, i)
 		val key_val = Array.sub(key_buff1, i)
 	    in (
-		(*print("updaying key_buff entry " ^ istr(i) ^ ", to be value " ^ istr(prv_val + key_val) ^ "\n");*)
 		Array.update(key_buff1, i, (prv_val + key_val))
 	    )
 	    end
@@ -346,17 +276,10 @@ fun rank(iteration : int) : unit =
 	forLoop((0, max_key), key_buff_update)
 	)
 	end;
-	(*
-	print("\n42069\n\n\n\n");
-	forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "  "));
-	*)
-
 
 
 	(* Barrier *)
-	(*
-	print("k - 1 and nearby values are: " ^ istr( Array.sub(key_buff1, 1853)) ^ "  " ^ istr( Array.sub(key_buff1, 1854)) ^  "  " ^ istr( Array.sub(key_buff1, 1855)));  
-	*)
+
 	(* Master Section *)
 	let
 	val ffi_partial_verify = _import "partial_verification" : int * char * int * int *
@@ -364,10 +287,7 @@ fun rank(iteration : int) : unit =
 								  int array * int ref -> unit;
 	in (
 	ffi_partial_verify (iteration, class, test_array_size, num_keys, key_buff1, 
-			    test_rank_array, partial_verify_vals, passed_verification);
-	
-	print("PV after partial verify on iteration " ^ istr(iteration) ^ " is: " ^ istr(!passed_verification) ^ "\n")
-	
+			    test_rank_array, partial_verify_vals, passed_verification)
 	)
 	end
 	
@@ -375,33 +295,11 @@ fun rank(iteration : int) : unit =
     end
 
 
-(*
-val passed_verification = ref 0
-*)
-
-
-val _ = print("PV before free iteration is: " ^ istr(!passed_verification) ^ "\n")
-
 val _ = rank(1)
-
-val _ = print("PV after free iteration is: " ^ istr(!passed_verification) ^ "\n")
 
 val _ = passed_verification :=  0
 
-val _ = print("Start\n") 
-
 val _ = forLoop((1, max_iterations + 1), rank)
-
-val _ = print("PV after iterations is: " ^ istr(!passed_verification) ^ "\n")
-(*
-val _ = forLoop((0, num_keys), fn i => print(Bool.toString( Array.sub(key_buff1, i) = Array.sub(key_buff_ptr_global, i)) ^ "    "))
-
-
-val _ = forLoop((0, num_keys), fn i => print(Int.toString(Array.sub(key_buff1, i)) ^ "    "))
-
-
-val _ = forLoop((0, num_keys), fn i => print(Int.toString(Array.sub(key_buff_ptr_global, i)) ^ "    "))
-*)
 
 
 (*
@@ -418,41 +316,24 @@ fun par_loop(x: int) : unit =
 val _ = ForkJoin.parfor 1 (1, max_iterations + 1) par_loop
 *)
 
-
-
-
-
-
-
-
 (* TODO get number of threads *)
 val p = MLton.Parallel.numberOfProcessors
+
 
 val _ = timer_stop(0)
 
 val total_time = timer_read(0)
-(*
-val _ = forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "   "))
-*)
+
 
 val ffi_full_verify = _import "full_verify": int * int array * int array * 
 						int array * int ref-> unit;
-(*
-val _ = print("\n2\n\n\n\n")
-val _ = forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "  "))
-*)
-
 val _ = ffi_full_verify (num_keys, key_array, key_buff1, key_buff2, passed_verification)
 
 
-(* Final Printout goes here*)
-val valid = (!passed_verification = ((5*max_iterations) + 1)) 
-
-val _ = print("Math: " ^ istr(((5*max_iterations) + 1)) ^ ", PV: " ^ istr(!passed_verification) ^ "\n")
-
+(* Final Printout *)
 val _ = print_results("IS", class, total_keys, 0, 0, 
 			max_iterations, p, total_time, 
-			"keys ranked", valid, "3.0 structured")
+			"keys ranked", (!passed_verification = ((5*max_iterations) + 1)), "3.0 structured")
 
 
 
