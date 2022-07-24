@@ -266,16 +266,17 @@ fun rank(iteration : int) : unit =
 *)
 	(* Barrier *)
 
-
+	(*
 	print("\n3\n\n\n\n");
 	forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "  "));
-	
+	*)
 
 	(* prv zeroing done above *)
-
+	
+	(*
 	print("\nJUSTIN\n\n\n\n");
 	forLoop((0, max_key), fn i => print(istr(Array.sub(prv_buff1, i)) ^ "  "));
-	
+	*)
 
 	
 	(* For Nowait *)
@@ -294,10 +295,10 @@ fun rank(iteration : int) : unit =
 	)
 	end;
 	
-
+	(*
 	print("\nJUSTIN\n\n\n\n");
 	forLoop((0, max_key), fn i => print(istr(Array.sub(prv_buff1, i)) ^ "  "));
-	
+	*)
 
 
 	(* No OMP Signature *)
@@ -317,16 +318,16 @@ fun rank(iteration : int) : unit =
 	)
 	end;
    
-	
+	(*
 	print("\nGWEN\n\n\n\n");
 	forLoop((0, max_key), fn i => print(istr(Array.sub(prv_buff1, i)) ^ "  "));
-	
+	*)
 
 
-
+	(*
 	print("\n69420\n\n\n\n");
 	forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "  "));
-	
+	*)
 
 	(* Critical Section *) (* something in this section is causing key_buff to get fucked up*)
 	let
@@ -336,7 +337,7 @@ fun rank(iteration : int) : unit =
 		val prv_val = Array.sub(prv_buff1, i)
 		val key_val = Array.sub(key_buff1, i)
 	    in (
-		print("updaying key_buff entry " ^ istr(i) ^ ", to be value " ^ istr(prv_val + key_val) ^ "\n");
+		(*print("updaying key_buff entry " ^ istr(i) ^ ", to be value " ^ istr(prv_val + key_val) ^ "\n");*)
 		Array.update(key_buff1, i, (prv_val + key_val))
 	    )
 	    end
@@ -345,25 +346,28 @@ fun rank(iteration : int) : unit =
 	forLoop((0, max_key), key_buff_update)
 	)
 	end;
-
+	(*
 	print("\n42069\n\n\n\n");
 	forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "  "));
-	
+	*)
 
 
 
 	(* Barrier *)
+	(*
 	print("k - 1 and nearby values are: " ^ istr( Array.sub(key_buff1, 1853)) ^ "  " ^ istr( Array.sub(key_buff1, 1854)) ^  "  " ^ istr( Array.sub(key_buff1, 1855)));  
-
+	*)
 	(* Master Section *)
 	let
 	val ffi_partial_verify = _import "partial_verification" : int * char * int * int *
 								  int array * int array *
 								  int array * int ref -> unit;
 	in (
-	print("ffi-ing partial verify\n");
 	ffi_partial_verify (iteration, class, test_array_size, num_keys, key_buff1, 
-			    test_rank_array, partial_verify_vals, passed_verification)
+			    test_rank_array, partial_verify_vals, passed_verification);
+	
+	print("PV after partial verify on iteration " ^ istr(iteration) ^ " is: " ^ istr(!passed_verification) ^ "\n")
+	
 	)
 	end
 	
@@ -371,16 +375,24 @@ fun rank(iteration : int) : unit =
     end
 
 
-
-val passed_verification = ref 0
-
-val _ = rank(1)
 (*
 val passed_verification = ref 0
-
-val _ = forLoop((1, max_iterations + 1), rank)
 *)
 
+
+val _ = print("PV before free iteration is: " ^ istr(!passed_verification) ^ "\n")
+
+val _ = rank(1)
+
+val _ = print("PV after free iteration is: " ^ istr(!passed_verification) ^ "\n")
+
+val _ = passed_verification :=  0
+
+val _ = print("Start\n") 
+
+val _ = forLoop((1, max_iterations + 1), rank)
+
+val _ = print("PV after iterations is: " ^ istr(!passed_verification) ^ "\n")
 (*
 val _ = forLoop((0, num_keys), fn i => print(Bool.toString( Array.sub(key_buff1, i) = Array.sub(key_buff_ptr_global, i)) ^ "    "))
 
@@ -419,22 +431,24 @@ val p = MLton.Parallel.numberOfProcessors
 val _ = timer_stop(0)
 
 val total_time = timer_read(0)
-
+(*
 val _ = forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "   "))
+*)
 
-
-val _ = print("\n1\n\n\n\n")
 val ffi_full_verify = _import "full_verify": int * int array * int array * 
 						int array * int ref-> unit;
+(*
 val _ = print("\n2\n\n\n\n")
 val _ = forLoop((0, size_of_buffers), fn i => print(istr(Array.sub(key_buff1, i)) ^ "  "))
-
+*)
 
 val _ = ffi_full_verify (num_keys, key_array, key_buff1, key_buff2, passed_verification)
 
 
 (* Final Printout goes here*)
 val valid = (!passed_verification = ((5*max_iterations) + 1)) 
+
+val _ = print("Math: " ^ istr(((5*max_iterations) + 1)) ^ ", PV: " ^ istr(!passed_verification) ^ "\n")
 
 val _ = print_results("IS", class, total_keys, 0, 0, 
 			max_iterations, p, total_time, 

@@ -361,19 +361,19 @@ long NUM_KEYS,
 int* key_buff1,
 int* test_rank_array,
 int* partial_verify_vals,
-long* pv
+int* pv
 ){
 
-
+/*
 for(int g = 0; g  < TEST_ARRAY_SIZE; g++) {
 printf("%d: %ld\n", g, partial_verify_vals[g]);
 }
-
+*/
 
 
 long i;
 long k;
-long* passed_verification = pv;
+int* passed_verification = pv;
 
 
 /* This is the partial verify test section */
@@ -391,8 +391,8 @@ long* passed_verification = pv;
                         if( key_buff1[k-1] != test_rank_array[i]+iteration )
                         {
 				
-			    printf("comparing %ld != %ld\n", key_buff1[k-1], test_rank_array[i]+iteration);
-                            printf("k - 1 is %ld\n", (k-1));
+			    //printf("comparing %ld != %ld\n", key_buff1[k-1], test_rank_array[i]+iteration);
+                            //printf("k - 1 is %ld\n", (k-1));
 
 				printf( "1: Failed partial verification: "
                                   "iteration %d, test key %d\n", 
@@ -400,6 +400,7 @@ long* passed_verification = pv;
                         }
                         else
                             (*passed_verification)++;
+				printf("inc\n");
                     }
                     else
                     {
@@ -411,6 +412,7 @@ long* passed_verification = pv;
                         }
                         else
                             (*passed_verification)++;
+				printf("inc\n");
                     }
                     break;
                 case 'W':
