@@ -193,104 +193,121 @@ val _ = forLoopArg((1, max_iterations + 1), rank_loop, passed_verification)
 *)
 
 
+
+	
+
+
+
+
+
+
 fun rank(iteration : int) : unit = 
     let
 	val prv_buff1 = Array.array(max_key, 0)
+	
+	fun first_master() = 	
+		let
+		val _ = Array.update(key_array, iteration, iteration)
+		val _ = Array.update(key_array, (iteration + max_iterations), (max_key - iteration))
+		
+		fun load_partial_array (i : int) = 
+			Array.update(partial_verify_vals, i, 
+				Array.sub(key_array, Array.sub(test_index_array, i)))
+
+		fun clear_work_array (i : int) = 
+			Array.update(key_buff1, i, 0)
+		
+		in (
+		forLoop((0, test_array_size), load_partial_array);
+		forLoop((0, max_key), clear_work_array)
+		)
+		end
+
+	fun for() = 
+		let	
+		fun rank_all_keys (i : int) = 
+
+		    let
+		    in(
+			Array.update(key_buff2, i, Array.sub(key_array, i));
+			Array.update(prv_buff1, Array.sub(key_buff2, i),
+					 (Array.sub(prv_buff1, Array.sub(key_buff2, i)) + 1))
+		    )
+		    end	
+		
+		in (
+		forLoop((0, num_keys), rank_all_keys) (* ParFor *)	
+		)
+		end
+
+	fun blank() = 
+		let
+		fun prv_update (i : int) =
+
+		    let
+			val prv_val0 = Array.sub(prv_buff1, (i + 1))
+			val prv_val1 = Array.sub(prv_buff1, i)
+		    in (
+			Array.update(prv_buff1, (i + 1), (prv_val0 + prv_val1))
+		    )
+		    end
+
+		in (
+		forLoop((0, (max_key - 1)), prv_update)
+		)
+		end
+
+
+	fun critical() = 
+		let
+		fun key_buff_update (i : int)  =
+
+		    let
+			val prv_val = Array.sub(prv_buff1, i)
+			val key_val = Array.sub(key_buff1, i)
+		    in (
+			Array.update(key_buff1, i, (prv_val + key_val))
+		    )
+		    end
+
+		in (
+		forLoop((0, max_key), key_buff_update)
+		)
+		end
+	
+	fun second_master() = 
+		let
+		val ffi_partial_verify = _import "partial_verification" : int * char * int * int *
+									  int array * int array *
+									  int array * int ref -> unit;
+		in (
+		ffi_partial_verify (iteration, class, test_array_size, num_keys, key_buff1, 
+				    test_rank_array, partial_verify_vals, passed_verification)
+		)
+		end
 	
     in (
 	
 	
 	(* Master Section *)
-	let
-	val _ = Array.update(key_array, iteration, iteration)
-	val _ = Array.update(key_array, (iteration + max_iterations), (max_key - iteration))
-	
-	fun load_partial_array (i : int) = 
-		Array.update(partial_verify_vals, i, 
-			Array.sub(key_array, Array.sub(test_index_array, i)))
+	first_master();
 
-	fun clear_work_array (i : int) = 
-		Array.update(key_buff1, i, 0)
-	
-	in (
-	forLoop((0, test_array_size), load_partial_array);
-	forLoop((0, max_key), clear_work_array)
-	)
-	end;
-	
 	(* Barrier *)
-
-
 	(* prv zeroing done above *)
-	
 
 	(* For Nowait *)
-	let	
-	fun rank_all_keys (i : int) = 
-
-	    let
-	    in(
-		Array.update(key_buff2, i, Array.sub(key_array, i));
-		Array.update(prv_buff1, Array.sub(key_buff2, i),
-				 (Array.sub(prv_buff1, Array.sub(key_buff2, i)) + 1))
-	    )
-	    end	
-	
-	in (
-	forLoop((0, num_keys), rank_all_keys) (* ParFor *)	
-	)
-	end;
-	
+	for();
 
 	(* No OMP Signature *)
-	let
-	fun prv_update (i : int) =
-
-	    let
-		val prv_val0 = Array.sub(prv_buff1, (i + 1))
-		val prv_val1 = Array.sub(prv_buff1, i)
-	    in (
-		Array.update(prv_buff1, (i + 1), (prv_val0 + prv_val1))
-	    )
-	    end
-
-	in (
-	forLoop((0, (max_key - 1)), prv_update)
-	)
-	end;
-   
+   	blank();
 
 	(* Critical Section *) (* something in this section is causing key_buff to get fucked up*)
-	let
-	fun key_buff_update (i : int)  =
-
-	    let
-		val prv_val = Array.sub(prv_buff1, i)
-		val key_val = Array.sub(key_buff1, i)
-	    in (
-		Array.update(key_buff1, i, (prv_val + key_val))
-	    )
-	    end
-
-	in (
-	forLoop((0, max_key), key_buff_update)
-	)
-	end;
-
+	critical();
 
 	(* Barrier *)
 
 	(* Master Section *)
-	let
-	val ffi_partial_verify = _import "partial_verification" : int * char * int * int *
-								  int array * int array *
-								  int array * int ref -> unit;
-	in (
-	ffi_partial_verify (iteration, class, test_array_size, num_keys, key_buff1, 
-			    test_rank_array, partial_verify_vals, passed_verification)
-	)
-	end
-	
+	second_master()	
     )
     end
 
