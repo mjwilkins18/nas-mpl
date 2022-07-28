@@ -1,5 +1,18 @@
 #include "ffi-help.h"
+#include <math.h>
+#include <stdlib.h>
 
+#if defined(USE_POW)
+#define r23 pow(0.5, 23.0)
+#define r46 (r23 * r23)
+#define t23 pow(2.0, 23.0)
+#define t46 (t23 * t23)
+#else
+#define r23 (0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5)
+#define r46 (r23 * r23)
+#define t23 (2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0)
+#define t46 (t23 * t23)
+#endif
 
 double randlc(double *x, double a)
 {
@@ -127,6 +140,11 @@ void vranlc_c(int n, double *x_seed, double a, double* y)
 	*x_seed = x;
 }
 
+void vranlc_c_minus_one(int n, double *x_seed, double a, double* y){
+	/* Wraps vranlc with a decrement to y to deal with EP's direct pointer manipulation in the parallel region */
+	vranlc_c(n, x_seed, a, y-1);
+}
+
 double power( double a, int n ) {
 
 /*--------------------------------------------------------------------
@@ -178,7 +196,29 @@ c-------------------------------------------------------------------*/
 }
 
 
+double log_c(double a) { 
+
+/*--------------------------------------------------------------------
+c-------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------
+c     log  takes the log of a double
+c-------------------------------------------------------------------*/
+	return log(a);
+
+}
 
 
+int max_c(double a, double b) { 
+
+/*--------------------------------------------------------------------
+c-------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------
+c     max  returns the max of two doubles as a truncated int
+c-------------------------------------------------------------------*/
+	if(a >= b) return a; else return b;
+
+}
 
 
