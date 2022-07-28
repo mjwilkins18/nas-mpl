@@ -1,5 +1,5 @@
-#ifndef __MG_ML_H__
-#define __MG_ML_H__
+#ifndef __MG_S_ML_H__
+#define __MG_S_ML_H__
 
 /* Copyright (C) 2004-2007 Henry Cejtin, Matthew Fluet, Suresh
  *    Jagannathan, and Stephen Weeks.
@@ -132,23 +132,23 @@ typedef Pointer Objptr;
 
 #endif /* _MLTON_EXPORT_H_ */
 
-#if !defined(PART_OF_MG) && \
-    !defined(STATIC_LINK_MG) && \
-    !defined(DYNAMIC_LINK_MG)
-#define PART_OF_MG
+#if !defined(PART_OF_MG_S) && \
+    !defined(STATIC_LINK_MG_S) && \
+    !defined(DYNAMIC_LINK_MG_S)
+#define PART_OF_MG_S
 #endif
 
-#if defined(PART_OF_MG)
+#if defined(PART_OF_MG_S)
 #define MLLIB_PRIVATE(x) PRIVATE x
 #define MLLIB_PUBLIC(x) PUBLIC x
-#elif defined(STATIC_LINK_MG)
+#elif defined(STATIC_LINK_MG_S)
 #define MLLIB_PRIVATE(x)
 #define MLLIB_PUBLIC(x) PUBLIC x
-#elif defined(DYNAMIC_LINK_MG)
+#elif defined(DYNAMIC_LINK_MG_S)
 #define MLLIB_PRIVATE(x)
 #define MLLIB_PUBLIC(x) EXTERNAL x
 #else
-#error Must specify linkage for mg
+#error Must specify linkage for mg_S
 #define MLLIB_PRIVATE(x)
 #define MLLIB_PUBLIC(x)
 #endif
@@ -166,4 +166,4 @@ MLLIB_PUBLIC(void Parallel_run ();)
 }
 #endif
 
-#endif /* __MG_ML_H__ */
+#endif /* __MG_S_ML_H__ */
