@@ -1,5 +1,3 @@
-#include "npb-C.h"
-#include "globals.h"
 #include "ffi-help.h"
 
 /* parameters */
