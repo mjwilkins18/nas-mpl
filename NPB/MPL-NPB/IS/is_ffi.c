@@ -106,7 +106,8 @@ void full_verify(int NUM_KEYS, int* key_array,
     for( i=1; i<NUM_KEYS; i++ )
         if( key_array[i-1] > key_array[i] ){
 	    //printf("Error when comparing %d > %d\n", key_array[i-1], key_array[i]);
-            j++;
+            printf("Index %d is wrong\n", i);
+	    j++;
 	}
 	
 	

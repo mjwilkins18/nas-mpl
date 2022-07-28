@@ -1,5 +1,5 @@
 val args = CommandLine.arguments()
-val class = List.hd (  String.explode(  List.hd  args  )  ) : char
+val class = String.sub(  List.hd(args), 0  ) : char
 
 
 fun total_keys_assigner(class) =
@@ -201,7 +201,16 @@ val _ = forLoopArg((1, max_iterations + 1), rank_loop, passed_verification)
 
 
 
-fun rank(iteration : int) : unit = 
+fun rank(iteration : int,
+	 lock_1 : int ref,
+	 lock_2 : int ref,
+	 lock_3 : int ref,
+	 lock_4 : int ref,
+	 pop_lock : int ref,
+	 population : int ref
+
+
+		) : unit = 
     let
 	val prv_buff1 = Array.array(max_key, 0)
 	
@@ -225,18 +234,23 @@ fun rank(iteration : int) : unit =
 
 	fun for() = 
 		let	
+		val l = lock_init()
 		fun rank_all_keys (i : int) = 
 
 		    let
 		    in(
+			(*print(istr(i) ^ "\n");*)
 			Array.update(key_buff2, i, Array.sub(key_array, i));
+			lock(l);
 			Array.update(prv_buff1, Array.sub(key_buff2, i),
-					 (Array.sub(prv_buff1, Array.sub(key_buff2, i)) + 1))
-		    )
+					 (Array.sub(prv_buff1, Array.sub(key_buff2, i)) + 1));
+		    	unlock(l); ()
+			)
 		    end	
 		
 		in (
-		forLoop((0, num_keys), rank_all_keys) (* ParFor *)	
+		ForkJoin.parfor 1 (0, num_keys) rank_all_keys (* ParFor *)	
+		(*forLoop((0, num_keys), rank_all_keys)*)
 		)
 		end
 
@@ -288,50 +302,83 @@ fun rank(iteration : int) : unit =
 	
     in (
 	
+	print("2");
 	
 	(* Master Section *)
-	first_master();
 
-	(* Barrier *)
+	single_lock(lock_1, first_master);
+(*
+	if single_lock(lock_1) = 1
+	then (first_master(); single_unlock(lock_1))
+	else 0;
+*)	(* Barrier implied by single*)
 	(* prv zeroing done above *)
 
 	(* For Nowait *)
 	for();
+	print("4");
 
 	(* No OMP Signature *)
    	blank();
 
-	(* Critical Section *) (* something in this section is causing key_buff to get fucked up*)
+	(* Critical Section *) 
+
+	lock( lock_2 );
 	critical();
+	unlock( lock_2 );
 
 	(* Barrier *)
-
+	
+	barrier(lock_4, pop_lock, population, 1);
 	(* Master Section *)
-	second_master()	
+
+	single_lock(lock_3, second_master);
+(*	if single_lock(lock_3) = 1
+	then (second_master(); single_unlock(lock_3))
+	else 0;
+*)	()
     )
     end
 
 
-val _ = rank(1)
+val _ = print("1")
+val _ = rank(1, ref 0, ref 0, ref 0, ref 0, ref 0, ref 0 )
 
 val _ = passed_verification :=  0
 
-val _ = forLoop((1, max_iterations + 1), rank)
+val lock_1 = lock_init()
+val lock_2 = lock_init()
+val lock_3 = lock_init()
+val lock_4 = lock_init()
+val pop_lock = lock_init()
+val population = lock_init()
 
 
-(*
-fun par_loop(x: int) : unit = 
-	let val _ = 
-		if (class <> #"S")
-		then print("        " ^ Int.toString(x) ^ "\n")
-	    	else ()
-	    val _ = rank(x)
-	in ()
-	end
+fun par_loop(x: int) : unit = ( 
+
+	if (class <> #"S")
+	then print("        " ^ Int.toString(x) ^ "\n")
+	else ();
+	(*TODO you gotta remove these when you go full par *)
+	lock_1 := 0;
+	lock_3 := 0;
+	lock_4 := 0;
+	pop_lock := 0;
+	population := 0;
+
+	rank(x, lock_1, lock_2, lock_3, lock_4, pop_lock, population)
+
+	)
 
 
-val _ = ForkJoin.parfor 1 (1, max_iterations + 1) par_loop
-*)
+(*val _ = ForkJoin.parfor 1 (1, max_iterations + 1) par_loop*)
+
+
+val _ = forLoop((1, max_iterations + 1), par_loop)
+
+
+
+
 
 (* TODO get number of threads *)
 val p = MLton.Parallel.numberOfProcessors
