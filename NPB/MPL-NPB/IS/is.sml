@@ -217,7 +217,8 @@ fun rank(iteration : int,
 	fun first_master() = 	
 		let
 		val _ = Array.update(key_array, iteration, iteration)
-		val _ = Array.update(key_array, (iteration + max_iterations), (max_key - iteration))
+		val _ = Array.update(key_array, (iteration + max_iterations), 
+							(max_key - iteration))
 		
 		fun load_partial_array (i : int) = 
 			Array.update(partial_verify_vals, i, 
@@ -302,21 +303,16 @@ fun rank(iteration : int,
 	
     in (
 	
-	print("2");
 	
 	(* Master Section *)
 
 	single_lock(lock_1, first_master);
-(*
-	if single_lock(lock_1) = 1
-	then (first_master(); single_unlock(lock_1))
-	else 0;
-*)	(* Barrier implied by single*)
+	
+	(* Barrier implied by single*)
 	(* prv zeroing done above *)
 
 	(* For Nowait *)
 	for();
-	print("4");
 
 	(* No OMP Signature *)
    	blank();
@@ -329,20 +325,16 @@ fun rank(iteration : int,
 
 	(* Barrier *)
 	
-	barrier(lock_4, pop_lock, population, 1);
+(*	barrier(lock_3, pop_lock, population, max_iterations); *)
 	(* Master Section *)
 
-	single_lock(lock_3, second_master);
-(*	if single_lock(lock_3) = 1
-	then (second_master(); single_unlock(lock_3))
-	else 0;
-*)	()
+	single_lock(lock_4, second_master);
+	()
     )
     end
 
 
-val _ = print("1")
-val _ = rank(1, ref 0, ref 0, ref 0, ref 0, ref 0, ref 0 )
+val _ = rank(1, ref 0, ref 0, ref 0, ref 0, ref 0, ref (max_iterations - 1) )
 
 val _ = passed_verification :=  0
 
@@ -359,7 +351,6 @@ fun par_loop(x: int) : unit = (
 	if (class <> #"S")
 	then print("        " ^ Int.toString(x) ^ "\n")
 	else ();
-	(*TODO you gotta remove these when you go full par *)
 	lock_1 := 0;
 	lock_3 := 0;
 	lock_4 := 0;
@@ -370,13 +361,7 @@ fun par_loop(x: int) : unit = (
 
 	)
 
-
-(*val _ = ForkJoin.parfor 1 (1, max_iterations + 1) par_loop*)
-
-
-val _ = forLoop((1, max_iterations + 1), par_loop)
-
-
+val _ = forLoop((1, max_iterations + 1), par_loop) 
 
 
 

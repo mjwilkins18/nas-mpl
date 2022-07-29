@@ -35,10 +35,8 @@ fun barrier (lock_ref : int ref,
 		
 		lock(population_lock);
 		population := !population + 1;
-		unlock(population_lock);
-		
+		unlock(population_lock);		
 		while (pop_target <> !population) do ();
-		
 		MLton.Parallel.compareAndSwap lock_ref (1, 2))
 	else (	lock(population_lock);
 		population := !population + 1;

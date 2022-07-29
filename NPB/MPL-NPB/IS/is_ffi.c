@@ -105,8 +105,6 @@ void full_verify(int NUM_KEYS, int* key_array,
     j = 0;
     for( i=1; i<NUM_KEYS; i++ )
         if( key_array[i-1] > key_array[i] ){
-	    //printf("Error when comparing %d > %d\n", key_array[i-1], key_array[i]);
-            printf("Index %d is wrong\n", i);
 	    j++;
 	}
 	
@@ -364,13 +362,6 @@ int* test_rank_array,
 int* partial_verify_vals,
 int* pv
 ){
-
-/*
-for(int g = 0; g  < TEST_ARRAY_SIZE; g++) {
-printf("%d: %ld\n", g, partial_verify_vals[g]);
-}
-*/
-
 
 long i;
 long k;
