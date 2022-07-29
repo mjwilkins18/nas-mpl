@@ -16,3 +16,4 @@ ENV
 *.F
 *.o
 tool_src/mlton
+ffi-help.h

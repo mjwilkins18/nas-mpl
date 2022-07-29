@@ -6,12 +6,12 @@
 if [[ $# -lt 3 ]]; then
 
 	if [[ $# -eq 2 ]]; then
-		./ft_${1} @mpl procs ${2} --
+		./ft${1} @mpl procs ${2} --
 	else
 		if [[ $# -eq 1 ]]; then
-			./ft_${1} @mpl procs 64 --
+			./ft${1} @mpl procs 64 --
 		else
-			./ft_S @mpl procs 64 --
+			./ftS @mpl procs 64 --
 		fi
 	fi
 

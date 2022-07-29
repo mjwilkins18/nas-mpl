@@ -1,11 +1,3 @@
-(* PARAM VALUES FOR CLASS S *)
-val NA = 1400
-val NONZER = 7
-val NITER = 15
-val SHIFT = 10.0
-val RCOND = 0.1
-
-(* END PARAMS *)
 
 val printLock : Word32.word ref = ref 0w0
 val _ = MLton.Parallel.Deprecated.lockInit printLock
@@ -41,8 +33,13 @@ val LASTROW  = NA;
 val FIRSTCOL = 1;
 val LASTCOL  = NA;
 
-val for = Util.for
+(*val for = Util.for*)
 
+fun forLoop((i : int, j : int), f : int -> unit) : unit = 
+		if i >=j then ()
+		else (
+				f(i)
+				;	forLoop((i+1, j), f))
 
 
 

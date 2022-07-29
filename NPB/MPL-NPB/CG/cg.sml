@@ -1,126 +1,133 @@
-
-
-fun conj_grad(colidx : int array, 
-		rowstr : int array, 
-		x : real array,
-		z : real array,
-		a : real array,
-		p : real array,
-		q : real array,
-		r : real array) =
+(************Functions***************)
+fun conj_grad(colidx : int array, rowstr : int array, x : real array, z : real array, a : real array, p : real array, q : real array, r : real array) =
 	let
-		val cgitmax = 25
-		val rho : real ref = ref 0.0
-		val retsum : real ref = ref 0.0
+	  val cgitmax = 25
+	  val rho : real ref = ref 0.0
+	  val retsum : real ref = ref 0.0
 	in
-		(
-			dbg("    FIRST FOR LOOP");
-			for (1, NA + 1) (fn j =>
-					let
-						val xj = Array.sub(x, j)
-					in
-						Array.update(q, j, 0.0)
-						;	Array.update(z, j, 0.0)
-						;	Array.update(r, j, xj)
-						;	Array.update(p, j, xj)
-					end
-			)
-		;	rho := dot(r, r, 1, LASTCOL-FIRSTCOL+2)
-		;	for (1, cgitmax+1) (fn cgit =>
-				let 
-					val rho0 = !rho
-					val d : real ref = ref 0.0
-					val alpha = ref 0.0
-					val beta = ref 0.0
-				in
-					rho := 0.0
-					(* This loop can be unrolled for possible performance improvements *)
-				;	dbg("    SECOND FOR LOOP")
-				;	for (1, (LASTROW-FIRSTROW+1)) (fn j =>
-						let
-							val sum : real ref = ref 0.0
-							val _ = dbg("j = " ^ istr(j))
-							val start : int = Array.sub(rowstr, j)
-							val stop : int = Array.sub(rowstr, j+1)
-						in
-							dbg("    THIRD FOR LOOP");
-							for (start, stop) (fn k => 
-									let
-										val _ = dbg("k = " ^ istr(k))
-										val ak = Array.sub(a, k)
-										val _ = dbg("sub a done")
-										val pcol = Array.sub(p, Array.sub(colidx, k))
-									in
-										sum := !sum + ak*pcol
-									end
-							)
-							;	Array.update(q, j, !sum)
-						end)
-				;	d := dot(p, q, 1, LASTCOL-FIRSTCOL+2)
-				;	alpha := rho0 / !d
-				(* TODO: make a func to parallel do each together? *)
-				(* need good parallel reduction *)
-				;	Array.modifyi (fn (i, elem) => 
-						if i >= 1 andalso i < LASTCOL-FIRSTCOL+2 then elem + !alpha * Array.sub(p, i) else elem) z
-				; 	Array.modifyi (fn (i, elem) => 
-						if i >= 1 andalso i < LASTCOL-FIRSTCOL+2 then elem - !alpha*Array.sub(q, i) else elem) r
-
-				;	rho := dot(r, r, 1, LASTCOL-FIRSTCOL+2)
-				; 	beta := !rho / rho0
-				;	Array.modifyi (fn (i, elem) => 
-						if i >= 1 andalso i < LASTCOL-FIRSTCOL+2 then Array.sub(r, i) + !alpha * elem else elem) p
-				end)
-		;	for (1, LASTROW-FIRSTROW+2) (fn j =>
+	(
+	  dbg("    FIRST FOR LOOP");
+	  forLoop((1, NA + 1), fn j =>
+	  (
+		let
+		  val xj = Array.sub(x, j)
+		in
+	      	  Array.update(q, j, 0.0);	
+	      	  Array.update(z, j, 0.0);	
+	      	  Array.update(r, j, xj);	
+	      	  Array.update(p, j, xj)
+	    	end
+	  ));
+         
+	  rho := dot(r, r, 1, LASTCOL-FIRSTCOL+2);
+	  
+	  forLoop((1, cgitmax+1), fn cgit =>
+	  (
+		let 
+		  val rho0 = !rho
+		  val d : real ref = ref 0.0
+		  val alpha = ref 0.0
+		  val beta = ref 0.0
+		in
+		  rho := 0.0;
+		  (* This loop can be unrolled for possible performance improvements *)
+		  dbg("    SECOND FOR LOOP");
+		  forLoop((1, (LASTROW-FIRSTROW+1)), fn j =>
+			let
+			  val sum : real ref = ref 0.0
+			  val _ = dbg("j = " ^ istr(j))
+			  val start : int = Array.sub(rowstr, j)
+			  val stop : int = Array.sub(rowstr, j+1)
+			in
+			  dbg("    THIRD FOR LOOP");
+			  forLoop((start, stop), fn k => 
+			  (	
 				let
-					val d = Array.sub(x, j) - Array.sub(r, j)
+				  val _ = dbg("k = " ^ istr(k))
+				  val ak = Array.sub(a, k)
+				  val _ = dbg("sub a done")
+				  val pcol = Array.sub(p, Array.sub(colidx, k))
 				in
-					retsum := !retsum + d*d
-				end)
-		; Math.sqrt(!retsum)
-		)
+				  sum := !sum + ak*pcol
+				end
+			  ));
+				
+			  Array.update(q, j, !sum)
+			end);
+		
+			d := dot(p, q, 1, LASTCOL-FIRSTCOL+2);
+			alpha := rho0 / !d;
+			
+			(* TODO: make a func to parallel do each together? *)
+			(* need good parallel reduction *)
+			Array.modifyi (fn (i, elem) => 
+				if i >= 1 andalso i < LASTCOL-FIRSTCOL+2 then 
+				  elem + !alpha * Array.sub(p, i) 
+				else elem) z;
+			Array.modifyi (fn (i, elem) => 
+				if i >= 1 andalso i < LASTCOL-FIRSTCOL+2 then 
+				  elem - !alpha*Array.sub(q, i) 
+				else elem) r;
+
+			rho := dot(r, r, 1, LASTCOL-FIRSTCOL+2);
+			beta := !rho / rho0;
+			Array.modifyi (fn (i, elem) => 
+				if i >= 1 andalso i < LASTCOL-FIRSTCOL+2 then 
+				  Array.sub(r, i) + !alpha * elem 
+				else elem) p
+	  	end
+	  ));
+
+	  forLoop((1, LASTROW-FIRSTROW+2), fn j =>
+	  (
+		let
+		  val d = Array.sub(x, j) - Array.sub(r, j)
+	 	in
+		  retsum := !retsum + d*d
+		end
+	  )); 
+	  
+	  Math.sqrt(!retsum)
+	)
 	end
 
 
 
-fun do_cg_iter(iter : int, 
-			colidx : int array, 
-			rowstr : int array, 
-			x : real array,
-			z : real array,
-			a : real array,
-			p : real array,
-			q : real array,
-			r : real array) = 
+fun do_cg_iter(iter : int, colidx : int array, rowstr : int array, x : real array, z : real array, a : real array, p : real array, q : real array, r : real array) = 
+	let 
+	  val rnorm : real = conj_grad(colidx, rowstr, x, z, a, p, q, r)
+	  val norm_temp11 : real ref = ref 0.0
+	  val norm_temp12 : real ref = ref 0.0
+	in
+	  (* parallelizable *)
+	  forLoop((1, (LASTCOL-FIRSTCOL+2)), fn j =>
+	  ( 
 		let 
-			val rnorm : real = conj_grad(colidx, rowstr, x, z, a, p, q, r)
-			val norm_temp11 : real ref = ref 0.0
-			val norm_temp12 : real ref = ref 0.0
+	    	  val xj = Array.sub(x, j)
+	    	  val zj = Array.sub(z, j)
+	  	in
+	    	  norm_temp11 := !norm_temp11 + (xj * zj);
+	    	  norm_temp12 := !norm_temp12 + (zj * zj)
+	  	end
+	  ));
+	  
+	  norm_temp12 := 1.0 / Math.sqrt(!norm_temp12);
+	  print_iter(iter, rnorm, SHIFT + 1.0 / !norm_temp11);
+	  forLoop((1, LASTCOL-FIRSTCOL+2), fn j =>
+	  (
+		let 
+		  val zj = Array.sub(z, j)
 		in
-			(* parallelizable *)
-			for (1, (LASTCOL-FIRSTCOL+2)) (fn j => 
-				let 
-					val xj = Array.sub(x, j)
-					val zj = Array.sub(z, j)
-				in
-					norm_temp11 := !norm_temp11 + (xj * zj)
-				;	norm_temp12 := !norm_temp12 + (zj * zj)
-				end
-			)
-		;	norm_temp12 := 1.0 / Math.sqrt(!norm_temp12)
-		;	print_iter(iter, rnorm, SHIFT + 1.0 / !norm_temp11)
-		;	for (1, LASTCOL-FIRSTCOL+2) (fn j =>
-				let 
-					val zj = Array.sub(z, j)
-				in
-					Array.update(x, j, !norm_temp12 * zj)
-				end	
-			)
-		;	SHIFT + (1.0 / !norm_temp11) (* zeta *)
-		end
+		  Array.update(x, j, !norm_temp12 * zj)
+		end	
+	  ));
+	  
+	  SHIFT + (1.0 / !norm_temp11) (* zeta *)
+	end
 
 
 
-(* ------- MAIN ------ *)
+(*************MAIN***************)
 val _ = dbg("STARTING MAIN\n")
 val zeta = randlc(TRAN, AMULT)
 
@@ -162,15 +169,11 @@ val _ = do_cg_iter(0, colidx, rowstr, x, z, a, p, q, r)
 val _ = dbg("starting iters\n")
 val _ = timer_clear(T_TOTAL)
 val _ = timer_start(T_TOTAL)
+
 (* now do actual iterations-1, only need return value from last iter *)
-val _ = for (1, NITER) (fn iter => 
-	let
-		val _ = do_cg_iter(iter, colidx, rowstr, x, z, a, p, q, r)
-	in
-		()
-	end
-)
+val _ = forLoop((1, NITER), fn iter => let val _ = do_cg_iter(iter, colidx, rowstr, x, z, a, p, q, r) in () end )
 val zeta = do_cg_iter(NITER, colidx, rowstr, x, z, a, p, q, r)
+
 val _ = timer_stop(T_TOTAL)
 val _ = dbg("AFTER ITERS")
 val total_time = timer_read(T_TOTAL)
