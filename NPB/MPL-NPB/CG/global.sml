@@ -33,8 +33,13 @@ val LASTROW  = NA;
 val FIRSTCOL = 1;
 val LASTCOL  = NA;
 
-val for = Util.for
+(*val for = Util.for*)
 
+fun forLoop((i : int, j : int), f : int -> unit) : unit = 
+		if i >=j then ()
+		else (
+				f(i)
+				;	forLoop((i+1, j), f))
 
 
 
