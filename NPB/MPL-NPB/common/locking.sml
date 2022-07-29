@@ -4,7 +4,6 @@ fun lock_init() =
 fun lock (lock_ref : int ref) : unit =
 	while (MLton.Parallel.compareAndSwap lock_ref (0, 1) <> 0) do ()
 
-
 fun unlock (lock_ref : int ref) : int = 
 	MLton.Parallel.compareAndSwap lock_ref (1, 0)
 

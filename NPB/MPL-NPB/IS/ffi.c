@@ -1,265 +1,505 @@
+double	randlc(X, A)
+double *X;
+double *A;
+{
+      static int        KS=0;
+      static double	R23, R46, T23, T46;
+      double		T1, T2, T3, T4;
+      double		A1;
+      double		A2;
+      double		X1;
+      double		X2;
+      double		Z;
+      int     		i, j;
 
-#include "ffi-help.h"
+      if (KS == 0) 
+      {
+        R23 = 1.0;
+        R46 = 1.0;
+        T23 = 1.0;
+        T46 = 1.0;
+    
+        for (i=1; i<=23; i++)
+        {
+          R23 = 0.50 * R23;
+          T23 = 2.0 * T23;
+        }
+        for (i=1; i<=46; i++)
+        {
+          R46 = 0.50 * R46;
+          T46 = 2.0 * T46;
+        }
+        KS = 1;
+      }
 
-/*
- */
-#if defined(USE_POW)
-#define r23 pow(0.5, 23.0)
-#define r46 (r23 * r23)
-#define t23 pow(2.0, 23.0)
-#define t46 (t23 * t23)
-#else
-#define r23 (0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5)
-#define r46 (r23 * r23)
-#define t23 (2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0)
-#define t46 (t23 * t23)
-#endif
+/*  Break A into two parts such that A = 2^23 * A1 + A2 and set X = N.  */
 
-#define SEED 314159265.0
-#define A 1220703125.0
-#define PI 3.141592653589793238
-#define ALPHA 1.0e-6
+      T1 = R23 * *A;
+      j  = T1;
+      A1 = j;
+      A2 = *A - T23 * A1;
 
-/*c---------------------------------------------------------------------
-c---------------------------------------------------------------------*/
+/*  Break X into two parts such that X = 2^23 * X1 + X2, compute
+    Z = A1 * X2 + A2 * X1  (mod 2^23), and then
+    X = 2^23 * Z + A2 * X2  (mod 2^46).                            */
 
-double randlc(double *x, double a)
+      T1 = R23 * *X;
+      j  = T1;
+      X1 = j;
+      X2 = *X - T23 * X1;
+      T1 = A1 * X2 + A2 * X1;
+      
+      j  = R23 * T1;
+      T2 = j;
+      Z = T1 - T23 * T2;
+      T3 = T23 * Z + A2 * X2;
+      j  = R46 * T3;
+      T4 = j;
+      *X = T3 - T46 * T4;
+      return(R46 * *X);
+} 
+
+
+
+
+void	create_seq( long MAX_KEY, long NUM_KEYS, int* Key_array )
 {
 
-	/*c---------------------------------------------------------------------
-	c---------------------------------------------------------------------*/
+	double seed = 314159265.00;
+	double a = 1220703125.00; 
+	double x;
+	int  i;
+	long k;	
 
-	/*c---------------------------------------------------------------------
-	c
-	c   This routine returns a uniform pseudorandom double precision number in the
-	c   range (0, 1) by using the linear congruential generator
-	c
-	c   x_{k+1} = a x_k  (mod 2^46)
-	c
-	c   where 0 < x_k < 2^46 and 0 < a < 2^46.  This scheme generates 2^44 numbers
-	c   before repeating.  The argument A is the same as 'a' in the above formula,
-	c   and X is the same as x_0.  A and X must be odd double precision integers
-	c   in the range (1, 2^46).  The returned value RANDLC is normalized to be
-	c   between 0 and 1, i.e. RANDLC = 2^(-46) * x_1.  X is updated to contain
-	c   the new seed x_1, so that subsequent calls to RANDLC using the same
-	c   arguments will generate a continuous sequence.
-	c
-	c   This routine should produce the same results on any computer with at least
-	c   48 mantissa bits in double precision floating point data.  On 64 bit
-	c   systems, double precision should be disabled.
-	c
-	c   David H. Bailey     October 26, 1990
-	c
-	c---------------------------------------------------------------------*/
+        k = MAX_KEY/4;
 
-	double t1, t2, t3, t4, a1, a2, x1, x2, z;
-
-	/*c---------------------------------------------------------------------
-	c   Break A into two parts such that A = 2^23 * A1 + A2.
-	c---------------------------------------------------------------------*/
-	t1 = r23 * a;
-	a1 = (int)t1;
-	a2 = a - t23 * a1;
-
-	/*c---------------------------------------------------------------------
-	c   Break X into two parts such that X = 2^23 * X1 + X2, compute
-	c   Z = A1 * X2 + A2 * X1  (mod 2^23), and then
-	c   X = 2^23 * Z + A2 * X2  (mod 2^46).
-	c---------------------------------------------------------------------*/
-	t1 = r23 * (*x);
-	x1 = (int)t1;
-	x2 = (*x) - t23 * x1;
-	t1 = a1 * x2 + a2 * x1;
-	t2 = (int)(r23 * t1);
-	z = t1 - t23 * t2;
-	t3 = t23 * z + a2 * x2;
-	t4 = (int)(r46 * t3);
-	(*x) = t3 - t46 * t4;
-
-	return (r46 * (*x));
-}
-
-/*c---------------------------------------------------------------------
-c---------------------------------------------------------------------*/
-
-void vranlc(int n, double *x_seed, double a, double y[])
-{
-
-	/*c---------------------------------------------------------------------
-	c---------------------------------------------------------------------*/
-
-	/*c---------------------------------------------------------------------
-	c
-	c   This routine generates N uniform pseudorandom double precision numbers in
-	c   the range (0, 1) by using the linear congruential generator
-	c
-	c   x_{k+1} = a x_k  (mod 2^46)
-	c
-	c   where 0 < x_k < 2^46 and 0 < a < 2^46.  This scheme generates 2^44 numbers
-	c   before repeating.  The argument A is the same as 'a' in the above formula,
-	c   and X is the same as x_0.  A and X must be odd double precision integers
-	c   in the range (1, 2^46).  The N results are placed in Y and are normalized
-	c   to be between 0 and 1.  X is updated to contain the new seed, so that
-	c   subsequent calls to VRANLC using the same arguments will generate a
-	c   continuous sequence.  If N is zero, only initialization is performed, and
-	c   the variables X, A and Y are ignored.
-	c
-	c   This routine is the standard version designed for scalar or RISC systems.
-	c   However, it should produce the same results on any single processor
-	c   computer with at least 48 mantissa bits in double precision floating point
-	c   data.  On 64 bit systems, double precision should be disabled.
-	c
-	c---------------------------------------------------------------------*/
-
-	int i;
-	double x, t1, t2, t3, t4, a1, a2, x1, x2, z;
-
-	/*c---------------------------------------------------------------------
-	c   Break A into two parts such that A = 2^23 * A1 + A2.
-	c---------------------------------------------------------------------*/
-	t1 = r23 * a;
-	a1 = (int)t1;
-	a2 = a - t23 * a1;
-	x = *x_seed;
-
-	/*c---------------------------------------------------------------------
-	c   Generate N results.   This loop is not vectorizable.
-	c---------------------------------------------------------------------*/
-	for (i = 1; i <= n; i++)
+	for (i=0; i<NUM_KEYS; i++)
 	{
+	    x = randlc(&seed, &a);
+	    x += randlc(&seed, &a);
+    	    x += randlc(&seed, &a);
+	    x += randlc(&seed, &a);  
 
-		/*c---------------------------------------------------------------------
-		c   Break X into two parts such that X = 2^23 * X1 + X2, compute
-		c   Z = A1 * X2 + A2 * X1  (mod 2^23), and then
-		c   X = 2^23 * Z + A2 * X2  (mod 2^46).
-		c---------------------------------------------------------------------*/
-		t1 = r23 * x;
-		x1 = (int)t1;
-		x2 = x - t23 * x1;
-		t1 = a1 * x2 + a2 * x1;
-		t2 = (int)(r23 * t1);
-		z = t1 - t23 * t2;
-		t3 = t23 * z + a2 * x2;
-		t4 = (int)(r46 * t3);
-		x = t3 - t46 * t4;
-		y[i] = r46 * x;
+            Key_array[i] = k*x;
+	}	
+
+}
+
+
+void full_verify(int NUM_KEYS, int* key_array, 
+	int* key_buff_ptr_global, int* key_buff2, int* pv)
+{
+    int*    passed_verification = pv;
+    int    i, j;
+    int    k;
+    int    m, unique_keys;
+
+    
+/*  Now, finally, sort the keys:  */
+    for( i=0; i<NUM_KEYS; i++ )
+        key_array[--key_buff_ptr_global[key_buff2[i]]] = key_buff2[i];
+
+
+/*  Confirm keys correctly sorted: count incorrectly sorted keys, if any */
+
+    j = 0;
+    for( i=1; i<NUM_KEYS; i++ )
+        if( key_array[i-1] > key_array[i] ){
+	    j++;
 	}
-	*x_seed = x;
+	
+	
+    if( j != 0 )
+    {
+        printf( "Full_verify: number of keys out of sort: %d\n",
+                j );
+    }
+    else {
+	(*passed_verification)++;
+	}  
 }
 
-static void ipow46(double a, int exponent, double *result)
+
+
+void rank(      int iteration, 
+		int MAX_KEY_LOG_2, 
+		int NUM_BUCKETS_LOG_2,
+		int* key_array,
+		int MAX_ITERATIONS,
+		int MAX_KEY,
+		int TEST_ARRAY_SIZE,
+		int* partial_verify_vals,
+		int* test_index_array,
+		int* key_buff1,
+		int* key_buff2,
+ 		int NUM_KEYS,
+		char CLASS,
+		int* test_rank_array,
+		int* key_buff_ptr_global,
+		int* pv)
 {
+    int*    passed_verification = pv;
+    int    i, j, k;
+    int    l, m;
 
-	/*--------------------------------------------------------------------
-	c-------------------------------------------------------------------*/
+    int    shift = MAX_KEY_LOG_2 - NUM_BUCKETS_LOG_2;
+    int    key;
+    int    min_key_val, max_key_val;
 
-	/*--------------------------------------------------------------------
-	c compute a^exponent mod 2^46
-	c-------------------------------------------------------------------*/
+    int	prv_buff1[MAX_KEY];
 
-	double dummy, q, r;
-	int n, n2;
+#pragma omp master
+  {
+    key_array[iteration] = iteration;
+    key_array[iteration+MAX_ITERATIONS] = MAX_KEY - iteration;
 
-	/*--------------------------------------------------------------------
-	c Use
-	c   a^n = a^(n/2)*a^(n/2) if n even else
-	c   a^n = a*a^(n-1)       if n odd
-	c-------------------------------------------------------------------*/
-	*result = 1;
-	if (exponent == 0)
-		return;
-	q = a;
-	r = 1;
-	n = exponent;
+/*  Determine where the partial verify test keys are, load into  */
+/*  top of array bucket_size                                     */
+    for( i=0; i<TEST_ARRAY_SIZE; i++ )
+        partial_verify_vals[i] = key_array[test_index_array[i]];
 
-	while (n > 1)
-	{
-		n2 = n / 2;
-		if (n2 * 2 == n)
-		{
-			dummy = randlc(&q, q);
-			n = n2;
-		}
-		else
-		{
-			dummy = randlc(&r, q);
-			n = n - 1;
-		}
-	}
-	dummy = randlc(&r, q);
-	*result = r;
+/*  Clear the work array */
+    for( i=0; i<MAX_KEY; i++ )
+        key_buff1[i] = 0;
+  }
+#pragma omp barrier  
+
+  for (i=0; i<MAX_KEY; i++)
+      prv_buff1[i] = 0;
+
+/*  Copy keys into work array; keys in key_array will be reused each iter. */
+#pragma omp for nowait
+    for( i=0; i<NUM_KEYS; i++ ) {
+        key_buff2[i] = key_array[i];
+
+/*  Ranking of all keys occurs in this section:                 */
+
+/*  In this section, the keys themselves are used as their 
+    own indexes to determine how many of each there are: their
+    individual population                                       */
+
+        prv_buff1[key_buff2[i]]++;  /* Now they have individual key   */
+    }
+                                       /* population                     */
+    for( i=0; i<MAX_KEY-1; i++ )   
+        prv_buff1[i+1] += prv_buff1[i];  
+
+
+#pragma omp critical
+    {
+	for( i=0; i<MAX_KEY; i++ )
+	    key_buff1[i] += prv_buff1[i];
+    }
+
+/*  To obtain ranks of each key, successively add the individual key
+    population, not forgetting to add m, the total of lesser keys,
+    to the first key population                                          */
+
+#pragma omp barrier    
+#pragma omp master
+  {
+    
+/* This is the partial verify test section */
+/* Observe that test_rank_array vals are   */
+/* shifted differently for different cases */
+    for( i=0; i<TEST_ARRAY_SIZE; i++ )
+    {                                             
+        k = partial_verify_vals[i];          /* test vals were put here */
+        if( 0 <= k  &&  k <= NUM_KEYS-1 )
+            switch( CLASS )
+            {
+                case 'S':
+                    if( i <= 2 )
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]+iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'W':
+                    if( i < 2 )
+                    {
+                        if( key_buff1[k-1] != 
+                                          test_rank_array[i]+(iteration-2) )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'A':
+                    if( i <= 2 )
+        	    {
+                        if( key_buff1[k-1] != 
+                                          test_rank_array[i]+(iteration-1) )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+        	    }
+                    else
+                    {
+                        if( key_buff1[k-1] != 
+                                          test_rank_array[i]-(iteration-1) )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'B':
+                    if( i == 1 || i == 2 || i == 4 )
+        	    {
+                        if( key_buff1[k-1] != test_rank_array[i]+iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+        	    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'C':
+                    if( i <= 2 )
+        	    {
+                        if( key_buff1[k-1] != test_rank_array[i]+iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+        	    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+            }        
+    }
+
+
+
+
+/*  Make copies of rank info for use by full_verify: these variables
+    in rank are local; making them global slows down the code, probably
+    since they cannot be made register by compiler                        */
+
+    if( iteration == MAX_ITERATIONS ) 
+        key_buff_ptr_global = key_buff1;
+
+  } /* end master */
 }
 
-static double get(double *arr, int width, int height, int depth, int x, int y, int z)
-{
-	return arr[height * depth * x + depth * y + z];
-}
 
-static void set(double *arr, int width, int height, int depth, int x, int y, int z, double val)
-{
-	arr[height * depth * x + depth * y + z] = val;
-}
 
-int compute_initial_conditions(Pointer ur, Pointer ui, int width, int height, int depth)
-{
 
-	/*--------------------------------------------------------------------
-	c-------------------------------------------------------------------*/
 
-	/*--------------------------------------------------------------------
-	c Fill in array u0 with initial conditions from
-	c random number generator
-	c-------------------------------------------------------------------*/
 
-	double *ureal = (double *)ur; // convert to good types
-	double *uimag = (double *)ui;
+void partial_verification(
+int iteration,
+char CLASS,
+long TEST_ARRAY_SIZE,
+long NUM_KEYS,
+int* key_buff1,
+int* test_rank_array,
+int* partial_verify_vals,
+int* pv
+){
 
-	int NX = depth;
-	int NY = height;
-	int NZ = width;
-	int MAXDIM = NX;
+long i;
+long k;
+int* passed_verification = pv;
 
-	int k;
-	double x0, start, an, dummy;
-	double *tmp = malloc((NX * 2 * MAXDIM + 1) * sizeof(double));
-	int i, j, t;
 
-	start = SEED;
-	/*--------------------------------------------------------------------
-	c Jump to the starting element for our first plane.
-	c-------------------------------------------------------------------*/
-	ipow46(A, (1 - 1) * 2 * NX * NY + (1 - 1) * 2 * NX, &an);
-	dummy = randlc(&start, an);
-	ipow46(A, 2 * NX * NY, &an);
-
-	/*--------------------------------------------------------------------
-	c Go through by z planes filling in one square at a time.
-	c-------------------------------------------------------------------*/
-	for (k = 0; k < width; k++)
-	{
-		x0 = start;
-		vranlc(2 * NX * NY, &x0, A, tmp);
-
-		t = 1;
-		for (j = 0; j < height; j++)
-			for (i = 0; i < depth; i++)
-			{
-				ureal[(k * height * depth) + (j * depth) + i] = tmp[t++];
-				uimag[(k * height * depth) + (j * depth) + i] = tmp[t++];
-			}
-
-		if (k != NZ)
-			dummy = randlc(&start, an);
-	}
-
-	free(tmp);
-
-	return 1;
-	// if (WRITE_TO_FILE == 1 && !written)
-	// {
-	// 	written = 1;
-	// 	printf("Writing to file!\n");
-	// 	write3dArr(u0, "/home/generic/luke/NPB/MPL-NPB/FT/inputs/ft_C_input.txt");
-	// 	printf("Done!\n");
-	// }
-}
+/* This is the partial verify test section */
+/* Observe that test_rank_array vals are   */
+/* shifted differently for different cases */
+    for( i=0; i<TEST_ARRAY_SIZE; i++ )
+    {                                             
+        k = partial_verify_vals[i];          /* test vals were put here */
+        if( 0 <= k  &&  k <= NUM_KEYS-1 )
+            switch( CLASS )
+            {
+                case 'S':
+                    if( i <= 2 )
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]+iteration )
+                        {
+				printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'W':
+                    if( i < 2 )
+                    {
+                        if( key_buff1[k-1] != 
+                                          test_rank_array[i]+(iteration-2) )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'A':
+                    if( i <= 2 )
+        	    {
+                        if( key_buff1[k-1] != 
+                                          test_rank_array[i]+(iteration-1) )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+        	    }
+                    else
+                    {
+                        if( key_buff1[k-1] != 
+                                          test_rank_array[i]-(iteration-1) )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'B':
+                    if( i == 1 || i == 2 || i == 4 )
+        	    {
+                        if( key_buff1[k-1] != test_rank_array[i]+iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+        	    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+                case 'C':
+                    if( i <= 2 )
+        	    {
+                        if( key_buff1[k-1] != test_rank_array[i]+iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+        	    }
+                    else
+                    {
+                        if( key_buff1[k-1] != test_rank_array[i]-iteration )
+                        {
+                            printf( "Failed partial verification: "
+                                  "iteration %d, test key %d\n", 
+                                   iteration, i );
+                        }
+                        else
+                            (*passed_verification)++;
+                    }
+                    break;
+            }        
+    }
+} 

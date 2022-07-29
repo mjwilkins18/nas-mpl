@@ -1,3 +1,0 @@
-#!/bin/bash
-mpl -codegen native -cc-opt "-O3 -mavx512f" -default-ann 'nonexhaustiveMatch ignore' -default-ann 'allowFFI true' -export-header ffi-help.h -export-header wtime.h is.mlb is_ffi.c wtime.c timing.c
-

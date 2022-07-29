@@ -1,5 +1,5 @@
-val NX = 128
-val NY = 128
-val NZ = 32
-val NITER_DEFAULT = 6 
-val CLASS = "W"
+val CLASS = #"W"
+val test_index_array = Array.fromList [ 357773, 934767, 875723, 898999, 404505 ]
+val test_rank_array = Array.fromList [ 1249, 11698, 1039987, 1043896, 1048018 ]
+val total_keys = lshift 20
+val max_key = lshift 16

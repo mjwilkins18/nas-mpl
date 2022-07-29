@@ -8,4 +8,4 @@ run:
 	./scripts/run.sh $(CLASS) $(PROCS)
 
 clean:
-	rm -f is isW isS isA isB isC timing 
+	rm -f is is_S is_W is_A is_B is_C 

@@ -1,5 +1,5 @@
 #!/bin/bash
-#This script re-compiles one or more of the FT benchmarks
+#This script re-compiles one or more of the IS benchmarks
 #$1 = Class to compile (compiles S if param not given)
 
 
@@ -11,7 +11,7 @@ if [[ $# -lt 2 ]]; then
 		class=$1
 	fi
 	echo $class
-	mpl -codegen native -cc-opt "-O3 -mavx512f" -default-type int64 -default-type word64 -default-type real64 -default-ann 'allowVectorExps true' -default-ann 'allowFFI true' -export-header ffi-help.h is${class}.sml timing.c ffi.c
+	mpl -codegen native -cc-opt "-O3 -mavx512f" -default-ann 'allowVectorExps true' -default-ann 'allowFFI true' -export-header ffi-help.h is_${class}.mlb timing.c ffi.c
 
 else
 	echo "Too many arguments"
