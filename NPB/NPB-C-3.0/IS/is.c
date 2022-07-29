@@ -30,6 +30,7 @@
   
 --------------------------------------------------------------------*/
 
+#include "npb-C.h"
 #include "npbparams.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -188,7 +189,7 @@ INT_TYPE test_index_array[TEST_ARRAY_SIZE],
 /***********************/
 /* function prototypes */
 /***********************/
-double	randlc( double *X, double *A );
+//double	randlc( double *X, double *A );
 
 void full_verify( void );
 
@@ -231,6 +232,10 @@ void full_verify( void );
 /*************    portable random number generator    ************/
 /*****************************************************************/
 
+
+
+//MW eliminated-using the common randlc instead
+/*
 double	randlc(X, A)
 double *X;
 double *A;
@@ -265,16 +270,16 @@ double *A;
         KS = 1;
       }
 
-/*  Break A into two parts such that A = 2^23 * A1 + A2 and set X = N.  */
+//  Break A into two parts such that A = 2^23 * A1 + A2 and set X = N. 
 
       T1 = R23 * *A;
       j  = T1;
       A1 = j;
       A2 = *A - T23 * A1;
 
-/*  Break X into two parts such that X = 2^23 * X1 + X2, compute
-    Z = A1 * X2 + A2 * X1  (mod 2^23), and then
-    X = 2^23 * Z + A2 * X2  (mod 2^46).                            */
+// Break X into two parts such that X = 2^23 * X1 + X2, compute
+//    Z = A1 * X2 + A2 * X1  (mod 2^23), and then
+//    X = 2^23 * Z + A2 * X2  (mod 2^46).                            
 
       T1 = R23 * *X;
       j  = T1;
@@ -291,7 +296,7 @@ double *A;
       *X = T3 - T46 * T4;
       return(R46 * *X);
 } 
-
+*/
 
 
 
@@ -308,10 +313,10 @@ void	create_seq( double seed, double a )
 
 	for (i=0; i<NUM_KEYS; i++)
 	{
-	    x = randlc(&seed, &a);
-	    x += randlc(&seed, &a);
-    	    x += randlc(&seed, &a);
-	    x += randlc(&seed, &a);  
+	    x = randlc(&seed, a);
+	    x += randlc(&seed, a);
+    	    x += randlc(&seed, a);
+	    x += randlc(&seed, a);  
 
             key_array[i] = k*x;
 	}
@@ -580,7 +585,7 @@ void rank( int iteration )
 /*************             M  A  I  N             ****************/
 /*****************************************************************/
 
-main( argc, argv )
+int main( argc, argv )
     int argc;
     char **argv;
 {
