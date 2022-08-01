@@ -4,12 +4,13 @@
 
 fun dot(v1 : real array, v2 : real array, start, last) : real = 
 	let 
-		val mul : real array = Array.tabulate(last, (fn j =>
+		val mul : real array = Array.tabulate(last-start, (fn j =>
 			let
 				val i = j + start
 				val v1elem : real = Array.sub(v1, i)
 				val v2elem : real = Array.sub(v2, i)
-			in 
+			in
+			 
 				v1elem * v2elem
 			end))
 	in

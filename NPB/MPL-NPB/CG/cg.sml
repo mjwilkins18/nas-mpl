@@ -1,4 +1,13 @@
 (************Functions***************)
+fun shift(lastrow : int, firstrow : int, firstcol : int, rowstr : int array, colidx : int array) = 
+	forLoop((1, lastrow - firstrow + 2), fn j =>
+	(
+		forLoop((Array.sub(rowstr, j), Array.sub(rowstr, j+1)), fn k =>
+		(
+			Array.update(colidx, k, Array.sub(colidx, k) - firstcol + 1)
+		))
+	))
+
 fun conj_grad(colidx : int array, rowstr : int array, x : real array, z : real array, a : real array, p : real array, q : real array, r : real array) =
 	let
 	  val cgitmax = 25
@@ -6,79 +15,82 @@ fun conj_grad(colidx : int array, rowstr : int array, x : real array, z : real a
 	  val retsum : real ref = ref 0.0
 	in
 	(
-	  dbg("    FIRST FOR LOOP");
-	  forLoop((1, NA + 1), fn j =>
+	  forLoop((1, NA + 2), fn j =>
 	  (
-		let
-		  val xj = Array.sub(x, j)
-		in
-	      	  Array.update(q, j, 0.0);	
-	      	  Array.update(z, j, 0.0);	
-	      	  Array.update(r, j, xj);	
-	      	  Array.update(p, j, xj)
-	    	end
+		Array.update(q, j, 0.0);	
+	      	Array.update(z, j, 0.0);	
+	      	Array.update(r, j, Array.sub(x, j));	
+	      	Array.update(p, j, Array.sub(r, j))
 	  ));
          
-	  rho := dot(r, r, 1, LASTCOL-FIRSTCOL+2);
-	  
+	  forLoop((1, LASTCOL-FIRSTCOL+2), fn j => 
+	  (
+		rho := !rho + Array.sub(r,j)*Array.sub(r,j)
+	  ));
+
 	  forLoop((1, cgitmax+1), fn cgit =>
 	  (
 		let 
 		  val rho0 = !rho
-		  val d : real ref = ref 0.0
+		  val d = ref 0.0
 		  val alpha = ref 0.0
 		  val beta = ref 0.0
 		in
 		  rho := 0.0;
-		  (* This loop can be unrolled for possible performance improvements *)
-		  dbg("    SECOND FOR LOOP");
-		  forLoop((1, (LASTROW-FIRSTROW+1)), fn j =>
+		  forLoop((1, (LASTROW-FIRSTROW+2)), fn j =>
+		  (
 			let
-			  val sum : real ref = ref 0.0
-			  val _ = dbg("j = " ^ istr(j))
-			  val start : int = Array.sub(rowstr, j)
-			  val stop : int = Array.sub(rowstr, j+1)
+			  val sum = ref 0.0
 			in
-			  dbg("    THIRD FOR LOOP");
-			  forLoop((start, stop), fn k => 
+
+			  forLoop((Array.sub(rowstr, j), Array.sub(rowstr, j+1)), fn k => 
 			  (	
-				let
-				  val _ = dbg("k = " ^ istr(k))
-				  val ak = Array.sub(a, k)
-				  val _ = dbg("sub a done")
-				  val pcol = Array.sub(p, Array.sub(colidx, k))
-				in
-				  sum := !sum + ak*pcol
-				end
+				sum := !sum + Array.sub(a, k)*Array.sub(p, Array.sub(colidx, k))
 			  ));
 				
 			  Array.update(q, j, !sum)
-			end);
+			end
+		  ));
 		
-			d := dot(p, q, 1, LASTCOL-FIRSTCOL+2);
-			alpha := rho0 / !d;
-			
-			(* TODO: make a func to parallel do each together? *)
-			(* need good parallel reduction *)
-			Array.modifyi (fn (i, elem) => 
-				if i >= 1 andalso i < LASTCOL-FIRSTCOL+2 then 
-				  elem + !alpha * Array.sub(p, i) 
-				else elem) z;
-			Array.modifyi (fn (i, elem) => 
-				if i >= 1 andalso i < LASTCOL-FIRSTCOL+2 then 
-				  elem - !alpha*Array.sub(q, i) 
-				else elem) r;
+		  forLoop((1, LASTCOL-FIRSTCOL+2), fn j => 
+		  (
+			d := !d + Array.sub(p,j)*Array.sub(q,j)
+		  ));
 
-			rho := dot(r, r, 1, LASTCOL-FIRSTCOL+2);
-			beta := !rho / rho0;
-			Array.modifyi (fn (i, elem) => 
-				if i >= 1 andalso i < LASTCOL-FIRSTCOL+2 then 
-				  Array.sub(r, i) + !alpha * elem 
-				else elem) p
+		  alpha := rho0 / !d;
+
+		  forLoop((1, LASTCOL-FIRSTCOL+2), fn j =>
+		  (
+			Array.update(z, j, Array.sub(z, j) + !alpha*Array.sub(p, j));
+			Array.update(r, j, Array.sub(r, j) - !alpha*Array.sub(q, j));
+			rho := !rho + Array.sub(r,j)*Array.sub(r,j)
+		  ));
+			
+		  beta := !rho / rho0;
+
+		  forLoop((1, LASTCOL-FIRSTCOL+2), fn j =>
+		  (
+			Array.update(p, j, Array.sub(r, j) + !beta*Array.sub(p, j))
+		  ))
+
 	  	end
 	  ));
 
 	  forLoop((1, LASTROW-FIRSTROW+2), fn j =>
+	  (
+		let
+		  val d = ref 0.0
+		in
+		  forLoop((Array.sub(rowstr, j), Array.sub(rowstr, j+1)), fn k =>
+		  (
+			d := !d + Array.sub(a, k)*Array.sub(z, Array.sub(colidx, k))
+		  ));
+
+		  Array.update(r, j, !d)
+		end
+	  ));
+
+	  forLoop((1, LASTCOL-FIRSTCOL+2), fn j =>
 	  (
 		let
 		  val d = Array.sub(x, j) - Array.sub(r, j)
@@ -112,7 +124,7 @@ fun do_cg_iter(iter : int, colidx : int array, rowstr : int array, x : real arra
 	  ));
 	  
 	  norm_temp12 := 1.0 / Math.sqrt(!norm_temp12);
-	  print_iter(iter, rnorm, SHIFT + 1.0 / !norm_temp11);
+	  print_iter(iter, rnorm, SHIFT + 1.0 / !norm_temp11); (* print zeta *)
 	  forLoop((1, LASTCOL-FIRSTCOL+2), fn j =>
 	  (
 		let 
@@ -156,9 +168,13 @@ val _ = print (" Iterations          : " ^ padStr(istr(NITER), 5)^"\n")
 
 val _ = dbg("PRE-CREATE\n")
 (* TODO: just edit makea to allocate its own damn memory *)
-val _ = create_data(NA, NZ, a, colidx, rowstr, NONZER, FIRSTROW, LASTROW, FIRSTCOL, LASTCOL, RCOND, arow, acol, aelt, v, iv, SHIFT, TRAN, AMULT)
+val _ = makea_c(NA, NZ, a, colidx, rowstr, NONZER, FIRSTROW, LASTROW, FIRSTCOL, LASTCOL, RCOND, arow, acol, aelt, v, iv, SHIFT, TRAN, AMULT)
 
 (* Necessary: edit makea to do the index shifting and all that jazz  *)
+(* MW: Doing it in SML here instead: *)
+val _ = shift(LASTROW, FIRSTROW, FIRSTCOL, rowstr, colidx)
+
+(*val _ = forLoop((0, NZ+1), fn q => print("index: " ^ istr(q) ^ " colidx val: " ^ istr(Array.sub(colidx, q)) ^ "\n"))*)
 
 val _ = dbg("PRE_FIRST_ITER, rowstr " ^ istr(Array.sub(rowstr, 1)))
 (* Do one iteration to touch all the data *)

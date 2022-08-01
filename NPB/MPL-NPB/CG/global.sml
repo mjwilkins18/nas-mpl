@@ -27,7 +27,7 @@ val T_TOTAL 	= 0
 (* END TIMING *)
 
 
-val NZ = NA * (NONZER+1) * (NONZER+1) + (NA * (NONZER+1))
+val NZ = NA * (NONZER+1) * (NONZER+1) + (NA * (NONZER+2))
 val FIRSTROW = 1;
 val LASTROW  = NA;
 val FIRSTCOL = 1;
@@ -51,7 +51,7 @@ val AMULT : real  = 1220703125.0;
 
 (* FFI *)
 (* val ipow46 = _import "ipow46" public: real * int -> real; *)
-val create_data = _import "makea" public: int * int * real array * int array * int array * int * int * int * int * int * real * int array * int array * real array * real array * int array * real * real ref * real -> unit;
+val makea_c = _import "makea" public: int * int * real array * int array * int array * int * int * int * int * int * real * int array * int array * real array * real array * int array * real * real ref * real -> unit;
 
 val randlc = _import "randlc" public: real ref * real -> real;
 
