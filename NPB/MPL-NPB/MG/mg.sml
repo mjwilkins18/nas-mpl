@@ -386,10 +386,12 @@ fun norm2u3 (r : c3dArr, n1 : int, n2 : int, n3 : int, rnm2 : real ref, rnmu : r
 	  val tmp = ref 0.0
 	  val n = nx*ny*nz
 	in(
-	  forLoop((1, n3-1), fn i3 =>
+	  ForkJoin.parfor G (1, n3-1) (fn i3 =>
 	  (
 		let
 	  	  val a = ref 0.0
+	  	  val s_local = ref 0.0
+	  	  val tmp_local = ref 0.0
 		in
 		  forLoop((1, n2-1), fn i2 =>
 		  (
@@ -399,15 +401,23 @@ fun norm2u3 (r : c3dArr, n1 : int, n2 : int, n3 : int, rnm2 : real ref, rnmu : r
 				  val s_mul = get3dElem(r, i3, i2, i1) * get3dElem(r, i3, i2, i1)
 				in
 				  a := fabs_c(get3dElem(r, i3, i2, i1));
-				  s := !s + s_mul;
-				  if (Real.>(!a, !tmp)) then
-				  	  tmp := !a
+				  s_local := !s_local + s_mul;
+				  if (Real.>(!a, !tmp_local)) then
+				  	  tmp_local := !a
 				  else ()
 				end
 			))
-		  ))
+		  ));
+
+		  lock(norm2u3_lock);
+		    s := !s + !s_local;
+		    if (Real.>(!tmp_local, !tmp)) then
+			  tmp := !tmp_local
+		    else ();
+		  unlock(norm2u3_lock); ()
 		end
 	  ));
+
 	  
 	  rnmu := !tmp;
 	  rnm2 := sqrt_c(!s/Real.fromInt(n))
