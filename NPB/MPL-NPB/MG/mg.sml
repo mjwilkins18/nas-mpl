@@ -41,17 +41,13 @@ fun setup (nx : int array, ny : int array, nz : int array, m1 : int array, m2 : 
 	end
 
 fun zero3 (z : c3dArr, n1 : int, n2 : int, n3 : int) : unit =
-	let 
-	  val k = 0
-	in
-	  forLoop((0, n3), fn i3 =>
+	  ForkJoin.parfor G(0, n3) (fn i3 =>
 		forLoop((0, n2), fn i2 =>
 			forLoop((0, n1), fn i1 =>
 				set3dElem(z, i3, i2, i1, 0.0)
-				)
 			)
 		)
-	end
+	  )
 
 fun bubbleForLoop1 ((k : int, j : int), ten : c2dArr, j1 : i2dArr, j2 : i2dArr, j3 : i2dArr, m : int, ind : int) : unit = 
 	forLoop((k, j), fn i =>
@@ -111,14 +107,9 @@ fun bubble (ten : c2dArr, j1 : i2dArr, j2 : i2dArr, j3 : i2dArr, m : int, ind : 
 	    bubbleForLoop2((0, m-1), ten, j1, j2, j3, m, ind)
 
 fun comm3 (u : c3dArr, n1 : int, n2 : int, n3 : int, kk : int) : unit = 
-	let
-	  val i1 = 0
-	  val i2 = 0
-	  val i3 = 0
-	in
 	(
-	  forLoop((1, n3-1), fn i3 =>
-	  (
+	ForkJoin.parfor G (1, n3-1) (fn i3 =>
+	(
 		forLoop((1, n2-1), fn i2 =>
 		(
 			(*print("First spot i3=" ^ padStr(istr(i3), 3) ^ " i2=" ^ padStr(istr(i2), 3) ^ "\n");*)
@@ -132,19 +123,17 @@ fun comm3 (u : c3dArr, n1 : int, n2 : int, n3 : int, kk : int) : unit =
 			set3dElem(u, i3, n2-1, i1, get3dElem(u, i3, 1, i1));
 			set3dElem(u, i3, 0, i1, get3dElem(u, i3, n2-2, i1))  
 		))
-	  ));
-	  forLoop((0, n2), fn i2 =>
-	  (
+	));
+	ForkJoin.parfor G (0, n2) (fn i2 =>
+	(
 		forLoop((0,n1), fn i1 =>
 		(
 			(*print("Third spot i2=" ^ istr(i2) ^ " i1=" ^ istr(i1) ^ "\n");*)
 			set3dElem(u, n3-1, i2, i1, get3dElem(u, 1, i2, i1));
 			set3dElem(u, 0, i2, i1, get3dElem(u, n3-2, i2, i1))
 		))
-	  ))
-		
+	))	
 	)
-	end
 
 fun zran3 (z : c3dArr, n1 : int, n2 : int, n3 : int, nx : int, ny : int, k : int) : unit =
 	let
@@ -363,7 +352,7 @@ fun zran3 (z : c3dArr, n1 : int, n2 : int, n3 : int, nx : int, ny : int, k : int
 	  (*print("m1 : " ^ istr(!m1) ^ "\n");*)
 	  (*print("m0 : " ^ istr(!m0) ^ "\n");*)
 
-	  forLoop((0, n3), fn i3 =>
+	  ForkJoin.parfor G (0, n3) (fn i3 =>
 	  (
 		forLoop((0, n2), fn i2 =>
 		(
@@ -394,23 +383,30 @@ fun zran3 (z : c3dArr, n1 : int, n2 : int, n3 : int, nx : int, ny : int, k : int
 fun norm2u3 (r : c3dArr, n1 : int, n2 : int, n3 : int, rnm2 : real ref, rnmu : real ref, nx : int, ny : int, nz : int) =
 	let
 	  val s = ref 0.0
-	  val a = ref 0.0
 	  val tmp = ref 0.0
 	  val n = nx*ny*nz
 	in(
 	  forLoop((1, n3-1), fn i3 =>
 	  (
-		forLoop((1, n2-1), fn i2 =>
-		(
+		let
+	  	  val a = ref 0.0
+		in
+		  forLoop((1, n2-1), fn i2 =>
+		  (
 			forLoop((1, n3-1), fn i1 =>
 			(
-				s := !s + get3dElem(r, i3, i2, i1) * get3dElem(r, i3, i2, i1);
-				a := fabs_c(get3dElem(r, i3, i2, i1));
-				if (Real.>(!a, !tmp)) then
+				let
+				  val s_mul = get3dElem(r, i3, i2, i1) * get3dElem(r, i3, i2, i1)
+				in
+				  a := fabs_c(get3dElem(r, i3, i2, i1));
+				  s := !s + s_mul;
+				  if (Real.>(!a, !tmp)) then
 				  	  tmp := !a
-				else ()
+				  else ()
+				end
 			))
-		))
+		  ))
+		end
 	  ));
 	  
 	  rnmu := !tmp;
@@ -423,14 +419,15 @@ fun norm2u3 (r : c3dArr, n1 : int, n2 : int, n3 : int, rnm2 : real ref, rnmu : r
 	end	
 
 fun resid (u : c3dArr, v : c3dArr, r : c3dArr, n1 : int, n2 : int, n3 : int, a : real array, k : int) =
-	let
-	  val u1 = Array.array(M, 0.0)
-	  val u2 = Array.array(M, 0.0)
-	in
-	  forLoop((1, n3-1), fn i3 =>
-	  (
-		forLoop((1, n2-1), fn i2 =>
-		(
+	(
+	ForkJoin.parfor G (1, n3-1) (fn i3 =>
+	(
+		let
+	  	  val u1 = Array.array(M, 0.0)
+	  	  val u2 = Array.array(M, 0.0)
+		in
+		  forLoop((1, n2-1), fn i2 =>
+		  (
 			forLoop((0, n1), fn i1 =>
 			(
 				Array.update(u1, i1, get3dElem(u, i3, i2-1, i1) + get3dElem(u, i3, i2+1, i1) + get3dElem(u, i3-1, i2, i1) + get3dElem(u, i3+1, i2, i1));
@@ -446,31 +443,34 @@ fun resid (u : c3dArr, v : c3dArr, r : c3dArr, n1 : int, n2 : int, n3 : int, a :
 			;	print("resid: " ^ rstr(get3dElem(r, i3, i2, i1)) ^ "\n")
 *)			
 			))
-		))
-	  ));
+		  ))
+		end
+	));
 	  
-	  comm3(r, n1, n2, n3, k)
-	end
+	comm3(r, n1, n2, n3, k)
+	)
 
 fun rprj3(r : c3dArr, m1k : int, m2k : int, m3k : int, s : c3dArr, m1j : int, m2j : int, m3j : int, k) = 
 	let
-	  val i3 = ref 0
-	  val i2 = ref 0
-	  val i1 = ref 0
 	  val d1 = if m1k = 3 then 2 else 1
 	  val d2 = if m2k = 3 then 2 else 1
 	  val d3 = if m3k = 3 then 2 else 1
-	  val x1 = Array.array(M, 0.0)
-	  val y1 = Array.array(M, 0.0)
-	  val x2 = ref 0.0
-	  val y2 = ref 0.0
 	in
 	(
-	  forLoop((1, m3j-1), fn j3 =>
+	  ForkJoin.parfor G (1, m3j-1) (fn j3 =>
 	  (
-		i3 := 2*j3-d3;
-		forLoop((1, m2j-1), fn j2 =>
-		(
+		let
+	  	  val i3 = ref 0
+	  	  val i2 = ref 0
+	  	  val i1 = ref 0
+	  	  val x1 = Array.array(M, 0.0)
+	  	  val y1 = Array.array(M, 0.0)
+	  	  val x2 = ref 0.0
+	  	  val y2 = ref 0.0
+		in
+		  i3 := 2*j3-d3;
+		  forLoop((1, m2j-1), fn j2 =>
+		  (
 			i2 := 2*j2-d2;
 			
 			forLoop((1, m1j), fn j1 =>
@@ -486,66 +486,42 @@ fun rprj3(r : c3dArr, m1k : int, m2k : int, m3k : int, s : c3dArr, m1j : int, m2
 				y2 := get3dElem(r, !i3, !i2, !i1+1) + get3dElem(r, !i3+2, !i2, !i1+1) + get3dElem(r, !i3, !i2+2, !i1+1) + get3dElem(r, !i3+2, !i2+2, !i1+1);
 				x2 := get3dElem(r, !i3+1, !i2, !i1+1) + get3dElem(r, !i3+1, !i2+2, !i1+1) + get3dElem(r, !i3, !i2+1, !i1+1) + get3dElem(r, !i3+2, !i2+1, !i1+1);
 				set3dElem(s, j3, j2, j1, 0.5 * get3dElem(r, !i3+1, !i2+1, !i1+1) + 0.25 * (get3dElem(r, !i3+1, !i2+1, !i1) + get3dElem(r, !i3+1, !i2+1, !i1+2) + !x2) + 0.125 * (Array.sub(x1,!i1) + Array.sub(x1, !i1+2) + !y2) + 0.0625 * (Array.sub(y1, !i1) + Array.sub(y1, !i1+2)))
-					(*				
-				;	print("s: " ^ rstr(get3dElem(s, j3, j2, j1)) ^ "\n")
-					*)
 			))
-		))
+		  ))
+	  	end
 	  ));
 
 	  comm3(s, m1j, m2j, m3j, k-1)
-	  (*
-	  ;  print("MIDDLE\n"); 
-	  forLoop((0, m3j), fn j3 =>
-	  (
-		forLoop((0, m2j), fn j2 =>
-		(
-			forLoop((0, m1j), fn j1 =>
-			(
-				print("s: " ^ rstr(get3dElem(s, j3, j2, j1)) ^ "\n")
-			))
-		))
-	  ))
-	  *)
 	)
 	end
 
 fun psinv(r : c3dArr, u : c3dArr, n1 : int, n2 : int, n3 : int, c : real array, k : int) = 
+	(
+	ForkJoin.parfor G (1, n3-1) (fn i3 =>
+	(
 	let
 	  val r1 = Array.array(M, 0.0)
 	  val r2 = Array.array(M, 0.0)
 	  (*val _ = print("n1: " ^ istr(n1) ^ " n2: " ^ istr(n2) ^ " n3: " ^ istr(n3) ^ "\n")*)
 	in
-	(
-	  forLoop((1, n3-1), fn i3 =>
+	  forLoop((1, n2-1), fn i2 =>
 	  (
-		forLoop((1, n2-1), fn i2 =>
+		forLoop((0, n1), fn i1 =>
 		(
-			forLoop((0, n1), fn i1 =>
-			(
-(*
-				print("4 square: " ^ rstr(get3dElem(r, i3, i2-1, i1)) ^ " " ^ rstr(get3dElem(r, i3, i2+1, i1)) ^ " " ^ rstr(get3dElem(r, i3-1, i2, i1)) ^ " " ^ rstr(get3dElem(r, i3+1, i2, i1)) ^ "\n");
-*)
-				Array.update(r1, i1, get3dElem(r, i3, i2-1, i1) + get3dElem(r, i3, i2+1, i1) + get3dElem(r, i3-1, i2, i1) + get3dElem(r, i3+1, i2, i1));
-				Array.update(r2, i1, get3dElem(r, i3-1, i2-1, i1) + get3dElem(r, i3-1, i2+1, i1) + get3dElem(r, i3+1, i2-1, i1) + get3dElem(r, i3+1, i2+1, i1))
-(*				
-				; print("r1: " ^ rstr(Array.sub(r1, i1)) ^ "  r2: " ^ rstr(Array.sub(r2, i1)) ^ "\n")		
-*)	
-			));
+			Array.update(r1, i1, get3dElem(r, i3, i2-1, i1) + get3dElem(r, i3, i2+1, i1) + get3dElem(r, i3-1, i2, i1) + get3dElem(r, i3+1, i2, i1));
+			Array.update(r2, i1, get3dElem(r, i3-1, i2-1, i1) + get3dElem(r, i3-1, i2+1, i1) + get3dElem(r, i3+1, i2-1, i1) + get3dElem(r, i3+1, i2+1, i1))
+		));
 			
-			forLoop((1, n1-1), fn i1 =>
-			(
-				set3dElem(u, i3, i2, i1, get3dElem(u, i3, i2, i1) + (Array.sub(c, 0) * get3dElem(r, i3, i2, i1)) + (Array.sub(c, 1) * (get3dElem(r, i3, i2, i1-1) + get3dElem(r, i3, i2, i1+1) + Array.sub(r1,i1))) + (Array.sub(c, 2) * (Array.sub(r2, i1) + Array.sub(r1, i1-1) + Array.sub(r1, i1+1)))) 
-(*
-				; print("u: " ^ rstr(get3dElem(u, i3, i2, i1)) ^ "\n") 
-*)
-			))
+		forLoop((1, n1-1), fn i1 =>
+		(
+			set3dElem(u, i3, i2, i1, get3dElem(u, i3, i2, i1) + (Array.sub(c, 0) * get3dElem(r, i3, i2, i1)) + (Array.sub(c, 1) * (get3dElem(r, i3, i2, i1-1) + get3dElem(r, i3, i2, i1+1) + Array.sub(r1,i1))) + (Array.sub(c, 2) * (Array.sub(r2, i1) + Array.sub(r1, i1-1) + Array.sub(r1, i1+1)))) 
 		))
-	  ));
+	  ))
+	end
+	));
 
 	  comm3(u, n1, n2, n3, k)
 	)
-	end
 
 fun interp(z : c3dArr, mm1 : int, mm2 : int, mm3 : int, u : c3dArr, n1 : int, n2 : int, n3 : int, k : int) = 
 	let
@@ -556,16 +532,18 @@ fun interp(z : c3dArr, mm1 : int, mm2 : int, mm3 : int, u : c3dArr, n1 : int, n2
 	  val t2 = if n2=3 then 1 else 0
 	  val t3 = if n3=3 then 1 else 0
 	  
-	  val z1 = Array.array(M, 0.0)
-	  val z2 = Array.array(M, 0.0)
-	  val z3 = Array.array(M, 0.0)
 	in
 	  if (n1 <> 3 andalso n2 <> 3 andalso n3 <> 3) then
 	  (
-		forLoop((0, mm3-1), fn i3 =>
+		ForkJoin.parfor G (0, mm3-1) (fn i3 =>
 		(
-			forLoop((0, mm2-1), fn i2 =>
-			(
+			let
+	  		  val z1 = Array.array(M, 0.0)
+	  		  val z2 = Array.array(M, 0.0)
+	  		  val z3 = Array.array(M, 0.0)
+			in
+			  forLoop((0, mm2-1), fn i2 =>
+			  (
 				forLoop((0, mm1), fn i1 =>
 				(
 					Array.update(z1, i1, get3dElem(z, i3, i2+1, i1) + get3dElem(z, i3, i2, i1));
@@ -621,12 +599,13 @@ fun interp(z : c3dArr, mm1 : int, mm2 : int, mm3 : int, u : c3dArr, n1 : int, n2
 				(*	
 				; print("break\n")
 				*)
-			))
+			  ))
+			end
 		))
 	  )
 	  else
           (
-		forLoop((d3, mm3-1), fn i3 =>
+		ForkJoin.parfor G (d3, mm3-1) (fn i3 =>
 		(
 			forLoop((d2, mm2-1), fn i2 =>
 			(
@@ -655,7 +634,7 @@ fun interp(z : c3dArr, mm1 : int, mm2 : int, mm3 : int, u : c3dArr, n1 : int, n2
 			))
 		));
 
-		forLoop((1, mm3-1), fn i3 =>
+		ForkJoin.parfor G (1, mm3-1) (fn i3 =>
 		(
 			forLoop((d2, mm2-1), fn i2 =>
 			(

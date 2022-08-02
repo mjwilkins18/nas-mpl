@@ -1,23 +1,12 @@
 val P = MLton.Parallel.numberOfProcessors
-
-(*Granularity Control Variables*)
-val OUTER_GRAIN = 8192
-val FFTZ_GRAIN = 1
-
-val NTHREAD = 16
 val G = CommandLineArgs.parseInt "G" (1)
-val IG = CommandLineArgs.parseInt "I" (64)
-val INNER_GRAIN = IG
-val NZ_GRAIN : int = G
-val NX_GRAIN : int = G
-val NY_GRAIN : int = G
 
-(* val NZ_GRAIN : int = if (OUTER_GRAIN div (NX*NY)) > 1 then OUTER_GRAIN div (NX*NY) else 1
-val NX_GRAIN : int = if (OUTER_GRAIN div (NZ*NY)) > 1 then OUTER_GRAIN div (NZ*NY) else 1
-val NY_GRAIN : int = if (OUTER_GRAIN div (NX*NZ)) > 1 then OUTER_GRAIN div (NX*NZ) else 1 *)
+val _ = print("G == " ^ istr(G) ^ "\n")
 
-val _ = print("NZ_G == " ^ istr(NZ_GRAIN) ^ "\n")
 
+(* Lock Declarations *)
+
+val norm2u3_lock = lock_init()
 
 (* MG Global Variables (Refs) *)
 val is1 = ref 0
