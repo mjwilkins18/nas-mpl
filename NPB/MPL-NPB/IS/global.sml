@@ -7,3 +7,4 @@ fun lshift n =
 	else 2 * lshift( n - 1 )
 
 val G = CommandLineArgs.parseInt "G" (1)
+val P = MLton.Parallel.numberOfProcessors
