@@ -89,36 +89,47 @@ val k_offset = ~1
 
 fun parallelRegion() =
 	let
-	  val t1 = ref 0.0
-	  val t2 = ref 0.0
-	  val t3 = ref 0.0
-	  val t4 = ref 0.0
-	  val x1 = ref 0.0
-	  val x2 = ref 0.0
-	  val kk = ref 0
-	  val ik = ref 0
-	  val l = ref 0
 	  val qq = Array.array(NQ, 0.0)
+	  val lock_1 = lock_init()
+	  val lock_2 = lock_init()
 	in
-	  forLoop((1, np+1), fn k =>
-	  (
+	  (ForkJoin.parfor G (1, (np+1)) (fn k =>
+	  (     let
+		val kk = ref 0 
+	  	val t1 = ref 0.0
+	  	val t2 = ref 0.0
+	  	val t3 = ref 0.0
+	  	val t4 = ref 0.0
+	  	val x1 = ref 0.0
+	  	val x2 = ref 0.0
+	  	val ik = ref 0
+	  	val l = ref 0
+		val sx_local = ref 0.0
+		val sy_local = ref 0.0
+		val xprime = Array.array(2*NK, 0.0)
+		
+		in (
 		kk := k_offset + k;
 		t1 := S;
 		t2 := !an;
-
-		startingSeedForLoop((1, 100), ik, kk, t1, t2, t3);
 		
-		(*Random Number Generation*)
+		startingSeedForLoop((1, 100), ik, kk, t1, t2, t3);
+		(* ^ This could be a target for further parallelization, 
+		but it seems like each thread is doing this sequentially *)
+		
+		(*Random Number Generation*) 
 		timer_start(T_RAND);
-		vranlc_c_minus_one(2*NK, t1, A, x);
+		vranlc_c_minus_one(2*NK, t1, A, xprime);
 		timer_stop(T_RAND);
-
+		
 		(*Gaussian Deviates Computation*)
 		timer_start(T_GAUS);
-		forLoop((0, NK), fn i =>
+		forLoop((0, NK), fn i => (* Supposedly not vectorizable, double check with Mike *)
 		(
-			x1 := 2.0 * Array.sub(x, 2*i) - 1.0;
-			x2 := 2.0 * Array.sub(x, 2*i+1) - 1.0;
+
+			
+			x1 := 2.0 * Array.sub(xprime, 2*i) - 1.0;
+			x2 := 2.0 * Array.sub(xprime, 2*i+1) - 1.0;
 			t1 := powerReal(!x1, 2) + powerReal(!x2, 2);
 			if (!t1 <= 1.0) then
 			(
@@ -127,17 +138,24 @@ fun parallelRegion() =
 				t4 := !x2 * !t2;
 				l := max_c(fabs_c(!t3), fabs_c(!t4));
 				Array.update(qq, !l, Array.sub(qq, !l) + 1.0);
-				sx := !sx + !t3;
-				sy := !sy + !t4 
+				sx_local := !sx_local + !t3;
+				sy_local := !sy_local + !t4 
 			)
-			else ()	
+			else ();
+			()	
 		));
-		timer_stop(T_GAUS)
-	  ));
+		lock(lock_1);
+		sx := !sx + !sx_local;
+		sy := !sy + !sy_local;
+		unlock(lock_1);
+		timer_stop(T_GAUS);
+		())
+		end
+	  )) );
 
 	  forLoop((0, NQ), fn i =>
 	  (
-		Array.update(q, i, Array.sub(qq, i))	
+		Array.update(q, i, (Array.sub(qq, i) + Array.sub(q, i)))	
 	  ))
 	end
 
