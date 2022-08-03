@@ -56,29 +56,33 @@ fun rank(iteration : int,
 			Array.update(key_buff1, i, 0)
 		
 		in (
-		forLoop((0, test_array_size), load_partial_array);
-		forLoop((0, max_key), clear_work_array)
+		ForkJoin.parfor G (0, test_array_size) load_partial_array;
+		ForkJoin.parfor G (0, max_key) clear_work_array
 		)
 		end
 
 	fun for() = 
 		let	
-		val l = lock_init()
-		fun rank_all_keys (i : int) = 
+		  val l = lock_init()
+		in 
+		  ForkJoin.parfor G (0, num_keys) (fn i =>
+		  (
+			Array.update(key_buff2, i, Array.sub(key_array, i))	
+		  ));
 
+		  forLoop((0, num_keys),fn i =>
+		  (
 		    let
+			val index = Array.sub(key_buff2, i)
+			val cur = Array.sub(prv_buff1, index)
 		    in(
-			Array.update(key_buff2, i, Array.sub(key_array, i));
-			lock(l);
-			Array.update(prv_buff1, Array.sub(key_buff2, i),
-					 (Array.sub(prv_buff1, Array.sub(key_buff2, i)) + 1));
-			unlock(l); ()
+			(*lock(l);*)
+			Array.update(prv_buff1, index, cur + 1);
+			(*unlock(l); *)()
 			)
 		    end	
-		
-		in (
-		ForkJoin.parfor G (0, num_keys) rank_all_keys	
-		)
+			 
+		  ))
 		end
 
 	fun blank() = 
@@ -132,7 +136,8 @@ fun rank(iteration : int,
 	
 	(* Master Section *)
 	
-	single_lock(lock_1, first_master);
+	(*single_lock(lock_1, first_master);*)
+	first_master();
 	(* Barrier implied by single*)
 	(* prv zeroing done above *)
 
@@ -142,15 +147,16 @@ fun rank(iteration : int,
    	blank();
 	(* Critical Section *) 
 	
-	lock( lock_2 );
+	(*lock( lock_2 );*)
 	critical();
-	unlock( lock_2 );
+	(*unlock( lock_2 );*)
 	(* Barrier *)
 	
 (*	barrier(lock_3, pop_lock, population, max_iterations); *)
 	(* Master Section *)
 
-	single_lock(lock_4, second_master);
+	(*single_lock(lock_4, second_master);*)
+	second_master();
 	()
     )
     end
