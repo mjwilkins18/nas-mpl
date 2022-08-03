@@ -206,7 +206,7 @@ val _ = print("Sums = " ^ rstr(!sx) ^ " " ^ rstr(!sy) ^ "\n")
 val _ = print("Counts:\n")
 val _ = forLoop((0, NQ), fn i => ( print(istr(i) ^ " " ^ rstr(Array.sub(q, i)) ^ "\n") ))
 
-val _ = print("Total time: " ^ rstr(t) ^ "\n");
-val _ = print("Gaussian pairs: " ^ rstr(tgaus) ^ "\n");
-val _ = print("Random Numbers: " ^ rstr(trand) ^ "\n");
+val _ = print("Time in seconds = " ^ rstr(t) ^ "\n");
+(*val _ = print("Gaussian pairs: " ^ rstr(tgaus) ^ "\n");
+val _ = print("Random Numbers: " ^ rstr(trand) ^ "\n");*)
 
