@@ -1,6 +1,6 @@
-(************Functions***************)
+(***********Functions***************)
 fun shift(lastrow : int, firstrow : int, firstcol : int, rowstr : int array, colidx : int array) = 
-	forLoop((1, lastrow - firstrow + 2), fn j =>
+	ForkJoin.parfor G (1, lastrow - firstrow + 2) (fn j =>
 	(
 		forLoop((Array.sub(rowstr, j), Array.sub(rowstr, j+1)), fn k =>
 		(
@@ -15,7 +15,7 @@ fun conj_grad(colidx : int array, rowstr : int array, x : real array, z : real a
 	  val retsum : real ref = ref 0.0
 	in
 	(
-	  forLoop((1, NA + 2), fn j =>
+	  ForkJoin.parfor G (1, NA + 2) (fn j =>
 	  (
 		Array.update(q, j, 0.0);	
 	      	Array.update(z, j, 0.0);	
@@ -37,7 +37,7 @@ fun conj_grad(colidx : int array, rowstr : int array, x : real array, z : real a
 		  val beta = ref 0.0
 		in
 		  rho := 0.0;
-		  forLoop((1, (LASTROW-FIRSTROW+2)), fn j =>
+		  ForkJoin.parfor G (1, (LASTROW-FIRSTROW+2)) (fn j =>
 		  (
 			let
 			  val sum = ref 0.0
@@ -76,7 +76,7 @@ fun conj_grad(colidx : int array, rowstr : int array, x : real array, z : real a
 	  	end
 	  ));
 
-	  forLoop((1, LASTROW-FIRSTROW+2), fn j =>
+	  ForkJoin.parfor G (1, LASTROW-FIRSTROW+2) (fn j =>
 	  (
 		let
 		  val d = ref 0.0
@@ -125,7 +125,8 @@ fun do_cg_iter(iter : int, colidx : int array, rowstr : int array, x : real arra
 	  
 	  norm_temp12 := 1.0 / Math.sqrt(!norm_temp12);
 	  print_iter(iter, rnorm, SHIFT + 1.0 / !norm_temp11); (* print zeta *)
-	  forLoop((1, LASTCOL-FIRSTCOL+2), fn j =>
+	  
+	  ForkJoin.parfor G (1, LASTCOL-FIRSTCOL+2) (fn j =>
 	  (
 		let 
 		  val zj = Array.sub(z, j)

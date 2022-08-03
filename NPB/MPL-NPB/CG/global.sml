@@ -1,4 +1,8 @@
 
+val P = MLton.Parallel.numberOfProcessors
+val G = CommandLineArgs.parseInt "G" (1)
+
+val _ = print("G == " ^ istr(G) ^ "\n")
 val printLock : Word32.word ref = ref 0w0
 val _ = MLton.Parallel.Deprecated.lockInit printLock
 val myWorkerId = MLton.Parallel.processorNumber
