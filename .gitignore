@@ -18,4 +18,4 @@ ENV
 tool_src/mlton
 ffi-help.h
 npbparams.h
-NPB/NPB-C-3.0/bin
+NPB/NPB-C-3.0/bin/*
