@@ -106,7 +106,6 @@ fun parallelRegion() =
 	  	val l = ref 0
 		val sx_local = ref 0.0
 		val sy_local = ref 0.0
-                val qq_local = Array.array(NQ, 0.0) 
 		val xprime = Array.array(2*NK, 0.0)
 		
 		in (
@@ -138,7 +137,7 @@ fun parallelRegion() =
 				t3 := !x1 * !t2;
 				t4 := !x2 * !t2;
 				l := max_c(fabs_c(!t3), fabs_c(!t4));
-				Array.update(qq_local, !l, Array.sub(qq_local, !l) + 1.0);
+				Array.update(qq, !l, Array.sub(qq, !l) + 1.0);
 				sx_local := !sx_local + !t3;
 				sy_local := !sy_local + !t4 
 			)
@@ -146,17 +145,15 @@ fun parallelRegion() =
 			()	
 		));
 		lock(lock_1);
-                forLoop((0, NQ), fn i => (Array.update(qq, i, (Array.sub(qq_local, i) +
-                Array.sub(qq, i)))));
 		sx := !sx + !sx_local;
 		sy := !sy + !sy_local;
 		unlock(lock_1);
 		timer_stop(T_GAUS);
 		())
 		end
-	  )) )
+	  )) );
 
-          ;     forLoop((0, NQ), fn i =>
+	  forLoop((0, NQ), fn i =>
 	  (
 		Array.update(q, i, (Array.sub(qq, i) + Array.sub(q, i)))	
 	  ))
