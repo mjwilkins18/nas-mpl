@@ -137,7 +137,7 @@ fun parallelRegion() =
 				t3 := !x1 * !t2;
 				t4 := !x2 * !t2;
 				l := max_c(fabs_c(!t3), fabs_c(!t4));
-				Array.update(qq, !l, Array.sub(qq, !l) + 1.0);
+				(*Array.update(qq, !l, Array.sub(qq, !l) + 1.0);*)
 				sx_local := !sx_local + !t3;
 				sy_local := !sy_local + !t4 
 			)
@@ -151,19 +151,19 @@ fun parallelRegion() =
 		timer_stop(T_GAUS);
 		())
 		end
-	  )) );
+	  )) )
 
-	  forLoop((0, NQ), fn i =>
+	  (*;  forLoop((0, NQ), fn i =>
 	  (
 		Array.update(q, i, (Array.sub(qq, i) + Array.sub(q, i)))	
-	  ))
+	  ))*)
 	end
 
 val _ = parallelRegion()
 
 (*End Parallel Region*) 
 
-val _ = forLoop((0, NQ), fn i => (gc := !gc + Array.sub(q, i)))
+(*val _ = forLoop((0, NQ), fn i => (gc := !gc + Array.sub(q, i)))*)
 
 val _ = timer_stop(T_BENCH)
 
@@ -201,10 +201,10 @@ val _ = if Real.<=(fabs_c( (!sx - vv1) / !sx), epsilon) andalso Real.<=(fabs_c( 
 val _ = print("\n\nEP Benchmark Results: \n")
 val _ = print("CPU Time = " ^ rstr(t)  ^ "\n")
 val _ = print("N = 2^" ^ istr(M)  ^ "\n")
-val _ = print("No. Gaussian Pairs = " ^ rstr(!gc)  ^ "\n")
+(*val _ = print("No. Gaussian Pairs = " ^ rstr(!gc)  ^ "\n")*)
 val _ = print("Sums = " ^ rstr(!sx) ^ " " ^ rstr(!sy) ^ "\n")
-val _ = print("Counts:\n")
-val _ = forLoop((0, NQ), fn i => ( print(istr(i) ^ " " ^ rstr(Array.sub(q, i)) ^ "\n") ))
+(*val _ = print("Counts:\n")
+val _ = forLoop((0, NQ), fn i => ( print(istr(i) ^ " " ^ rstr(Array.sub(q, i)) ^ "\n") ))*)
 
 val _ = print("Time in seconds = " ^ rstr(t) ^ "\n");
 (*val _ = print("Gaussian pairs: " ^ rstr(tgaus) ^ "\n");
