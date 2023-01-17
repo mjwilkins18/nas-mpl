@@ -9,6 +9,6 @@ $(SML_LIB)/basis/mlton.mlb
 timing.sml
 global.sml
 
-params/S.sml 
+params/C.sml 
 
 is.sml
