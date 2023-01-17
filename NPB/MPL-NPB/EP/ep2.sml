@@ -45,8 +45,6 @@ val t3 = ref 0.0
 val t4 = ref 0.0
 val x1 = ref 0.0
 val x2 = ref 0.0
-val sx = ref 0.0
-val sy = ref 0.0
 val tm = ref 0.0
 val an = ref 0.0
 val tt = ref 0.0
@@ -85,7 +83,11 @@ val _ = tt := S
 
 val k_offset = ~1
 
+fun tup_add(x : real*real, y : real*real) = ((#1 x) + (#1 y), (#2 x) + (#2 y));
+
 (*Begin Parallel Region*)
+
+val sxy_tuple = ref (0.0, 0.0);
 
 fun parallelRegion() =
 	let
@@ -93,7 +95,7 @@ fun parallelRegion() =
 	  val lock_1 = lock_init()
 	  val lock_2 = lock_init()
 	in
-	  (ForkJoin.parfor G (1, (np+1)) (fn k =>
+	  sxy_tuple := (SeqBasis.reduce G tup_add (0.0, 0.0) (1, (np+1)) (fn k =>
 	  (     let
 		val kk = ref 0 
 	  	val t1 = ref 0.0
@@ -106,6 +108,7 @@ fun parallelRegion() =
 	  	val l = ref 0
 		val sx_local = ref 0.0
 		val sy_local = ref 0.0
+                val qq_local = Array.array(NQ, 0.0) 
 		val xprime = Array.array(2*NK, 0.0)
 		
 		in (
@@ -137,7 +140,7 @@ fun parallelRegion() =
 				t3 := !x1 * !t2;
 				t4 := !x2 * !t2;
 				l := max_c(fabs_c(!t3), fabs_c(!t4));
-				(*Array.update(qq, !l, Array.sub(qq, !l) + 1.0);*)
+				Array.update(qq_local, !l, Array.sub(qq_local, !l) + 1.0);
 				sx_local := !sx_local + !t3;
 				sy_local := !sy_local + !t4 
 			)
@@ -145,25 +148,29 @@ fun parallelRegion() =
 			()	
 		));
 		lock(lock_1);
-		sx := !sx + !sx_local;
-		sy := !sy + !sy_local;
+                forLoop((0, NQ), fn i => (Array.update(qq, i, (Array.sub(qq_local, i) + Array.sub(qq, i)))));
 		unlock(lock_1);
-		timer_stop(T_GAUS);
-		())
+       		
+                timer_stop(T_GAUS);
+		
+                (!sx_local, !sy_local))
 		end
 	  )) )
 
-	  (*;  forLoop((0, NQ), fn i =>
+          ;     forLoop((0, NQ), fn i =>
 	  (
 		Array.update(q, i, (Array.sub(qq, i) + Array.sub(q, i)))	
-	  ))*)
+	  ))
 	end
 
 val _ = parallelRegion()
 
+val sx = (#1 (!sxy_tuple))
+val sy = (#2 (!sxy_tuple))
+
 (*End Parallel Region*) 
 
-(*val _ = forLoop((0, NQ), fn i => (gc := !gc + Array.sub(q, i)))*)
+val _ = forLoop((0, NQ), fn i => (gc := !gc + Array.sub(q, i)))
 
 val _ = timer_stop(T_BENCH)
 
@@ -188,7 +195,7 @@ val valid = ref false
 val epsilon = EPSILON
 
 
-val _ = if Real.<=(fabs_c( (!sx - vv1) / !sx), epsilon) andalso Real.<=(fabs_c( (!sy - vv2) / !sy), epsilon) then
+val _ = if Real.<=(fabs_c( (sx - vv1) / sx), epsilon) andalso Real.<=(fabs_c( (sy - vv2) / sy), epsilon) then
 	(
 		valid := true;
 		print(" VERIFICATION SUCCESSFUL\n")
@@ -201,10 +208,10 @@ val _ = if Real.<=(fabs_c( (!sx - vv1) / !sx), epsilon) andalso Real.<=(fabs_c( 
 val _ = print("\n\nEP Benchmark Results: \n")
 val _ = print("CPU Time = " ^ rstr(t)  ^ "\n")
 val _ = print("N = 2^" ^ istr(M)  ^ "\n")
-(*val _ = print("No. Gaussian Pairs = " ^ rstr(!gc)  ^ "\n")*)
-val _ = print("Sums = " ^ rstr(!sx) ^ " " ^ rstr(!sy) ^ "\n")
-(*val _ = print("Counts:\n")
-val _ = forLoop((0, NQ), fn i => ( print(istr(i) ^ " " ^ rstr(Array.sub(q, i)) ^ "\n") ))*)
+val _ = print("No. Gaussian Pairs = " ^ rstr(!gc)  ^ "\n")
+val _ = print("Sums = " ^ rstr(sx) ^ " " ^ rstr(sy) ^ "\n")
+val _ = print("Counts:\n")
+val _ = forLoop((0, NQ), fn i => ( print(istr(i) ^ " " ^ rstr(Array.sub(q, i)) ^ "\n") ))
 
 val _ = print("Time in seconds = " ^ rstr(t) ^ "\n");
 (*val _ = print("Gaussian pairs: " ^ rstr(tgaus) ^ "\n");

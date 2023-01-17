@@ -379,20 +379,22 @@ fun zran3 (z : c3dArr, n1 : int, n2 : int, n3 : int, nx : int, ny : int, k : int
 	  comm3(z, n1, n2, n3, k)
 	)
 	end
- 
+
+fun max(x,y) = if Real.>(x, y) then x else y
+fun tup_combine(x : real*real, y : real*real) = ((#1 x) + (#1 y), max((#2 x),(#2y)))
+
 fun norm2u3 (r : c3dArr, n1 : int, n2 : int, n3 : int, rnm2 : real ref, rnmu : real ref, nx : int, ny : int, nz : int) =
 	let
-	  val s = ref 0.0
-	  val tmp = ref 0.0
+          val stmp_tuple = ref (0.0, 0.0)
 	  val n = nx*ny*nz
 	in(
-	  ForkJoin.parfor G (1, n3-1) (fn i3 =>
+	  stmp_tuple := SeqBasis.reduce G tup_combine (0.0, 0.0) (1, n3-1) (fn i3 =>
 	  (
 		let
 	  	  val a = ref 0.0
 	  	  val s_local = ref 0.0
 	  	  val tmp_local = ref 0.0
-		in
+		in (
 		  forLoop((1, n2-1), fn i2 =>
 		  (
 			forLoop((1, n3-1), fn i1 =>
@@ -408,19 +410,24 @@ fun norm2u3 (r : c3dArr, n1 : int, n2 : int, n3 : int, rnm2 : real ref, rnmu : r
 				end
 			))
 		  ));
-
-		  lock(norm2u3_lock);
+                
+                  (!s_local, !tmp_local))
+		  (*lock(norm2u3_lock);
 		    s := !s + !s_local;
 		    if (Real.>(!tmp_local, !tmp)) then
 			  tmp := !tmp_local
 		    else ();
-		  unlock(norm2u3_lock); ()
+		  unlock(norm2u3_lock); ()*)
 		end
 	  ));
 
-	  
-	  rnmu := !tmp;
-	  rnm2 := sqrt_c(!s/Real.fromInt(n))
+
+	  rnmu := (#2 (!stmp_tuple));
+	  rnm2 := sqrt_c((#1 (!stmp_tuple))/Real.fromInt(n))
+	  (*
+          * rnmu := !tmp;
+	  * rnm2 := sqrt_c(!s/Real.fromInt(n))
+          *)
 
 (*	 
 	  ;	print("rnmu: " ^ rstr(!rnmu) ^ " rnm2: " ^ rstr(!rnm2) ^ "\n")

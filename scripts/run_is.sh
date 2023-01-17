@@ -5,7 +5,7 @@
 
 root_dir=$(pwd)
 langs=("C" "MPL")
-benchs=("CG" "EP" "FT" "IS" "MG")
+benchs=("IS")
 classes=("S" "W" "A" "B" "C")
 procs=(1 16 64 128)
 grains=(1 16 64)
