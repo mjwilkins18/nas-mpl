@@ -22,11 +22,11 @@ fun conj_grad(colidx : int array, rowstr : int array, x : real array, z : real a
 	      	Array.update(r, j, Array.sub(x, j));	
 	      	Array.update(p, j, Array.sub(r, j))
 	  ));
-         
-	  forLoop((1, LASTCOL-FIRSTCOL+2), fn j => 
-	  (
-		rho := !rho + Array.sub(r,j)*Array.sub(r,j)
-	  ));
+    
+    rho := (SeqBasis.reduce 10000 op+ 0.0 (1, LASTCOL-FIRSTCOL+2) (fn j =>
+    (
+    Array.sub(r,j)*Array.sub(r,j)
+    )));
 
 	  forLoop((1, cgitmax+1), fn cgit =>
 	  (
@@ -52,20 +52,30 @@ fun conj_grad(colidx : int array, rowstr : int array, x : real array, z : real a
 			end
 		  ));
 		
+      (*
 		  forLoop((1, LASTCOL-FIRSTCOL+2), fn j => 
 		  (
 			d := !d + Array.sub(p,j)*Array.sub(q,j)
 		  ));
+      *)
+
+      d := (SeqBasis.reduce 10000 op+ 0.0 (1, LASTCOL-FIRSTCOL+2) (fn j =>
+      (
+			Array.sub(p,j)*Array.sub(q,j)
+      )));
 
 		  alpha := rho0 / !d;
 
-		  forLoop((1, LASTCOL-FIRSTCOL+2), fn j =>
+		  rho := (SeqBasis.reduce 10000 op+ 0.0 (1, (LASTCOL-FIRSTCOL+2)) (fn j =>
 		  (
-			Array.update(z, j, Array.sub(z, j) + !alpha*Array.sub(p, j));
-			Array.update(r, j, Array.sub(r, j) - !alpha*Array.sub(q, j));
-			rho := !rho + Array.sub(r,j)*Array.sub(r,j)
-		  ));
-			
+      let
+			  val _ = Array.update(z, j, Array.sub(z, j) + !alpha*Array.sub(p, j))
+			  val _ = Array.update(r, j, Array.sub(r, j) - !alpha*Array.sub(q, j))
+      in
+        Array.sub(r,j)*Array.sub(r,j)
+      end
+		  )));
+
 		  beta := !rho / rho0;
 
 		  forLoop((1, LASTCOL-FIRSTCOL+2), fn j =>
@@ -90,38 +100,42 @@ fun conj_grad(colidx : int array, rowstr : int array, x : real array, z : real a
 		end
 	  ));
 
-	  forLoop((1, LASTCOL-FIRSTCOL+2), fn j =>
-	  (
-		let
+    retsum := (SeqBasis.reduce 10000 op+ 0.0 (1, LASTCOL-FIRSTCOL+2) (fn j =>
+    (
+    let 
 		  val d = Array.sub(x, j) - Array.sub(r, j)
-	 	in
-		  retsum := !retsum + d*d
-		end
-	  )); 
-	  
+    in
+      d*d
+    end
+    )));
+
 	  Math.sqrt(!retsum)
 	)
 	end
 
+fun tup_add(x : real*real, y : real*real) = ((#1 x) + (#1 y), (#2 x) + (#2 y));
 
 
 fun do_cg_iter(iter : int, colidx : int array, rowstr : int array, x : real array, z : real array, a : real array, p : real array, q : real array, r : real array) = 
 	let 
 	  val rnorm : real = conj_grad(colidx, rowstr, x, z, a, p, q, r)
+    val norm_temp1112_tup = ref (0.0, 0.0)
 	  val norm_temp11 : real ref = ref 0.0
 	  val norm_temp12 : real ref = ref 0.0
 	in
 	  (* parallelizable *)
-	  forLoop((1, (LASTCOL-FIRSTCOL+2)), fn j =>
+	  norm_temp1112_tup := (SeqBasis.reduce G tup_add (0.0, 0.0) (1, (LASTCOL-FIRSTCOL+2)) (fn j =>
 	  ( 
 		let 
 	    	  val xj = Array.sub(x, j)
 	    	  val zj = Array.sub(z, j)
 	  	in
-	    	  norm_temp11 := !norm_temp11 + (xj * zj);
-	    	  norm_temp12 := !norm_temp12 + (zj * zj)
+	    	  ((xj * zj), (zj * zj))
 	  	end
-	  ));
+	  )));
+
+    norm_temp11 := (#1 (!norm_temp1112_tup));
+    norm_temp12 := (#2 (!norm_temp1112_tup));
 	  
 	  norm_temp12 := 1.0 / Math.sqrt(!norm_temp12);
 	  print_iter(iter, rnorm, SHIFT + 1.0 / !norm_temp11); (* print zeta *)
