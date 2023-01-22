@@ -841,7 +841,10 @@ val _ = timer_stop(T_BENCH)
 val t = timer_read(T_BENCH)
 val tinit = timer_read(T_INIT)
 
+(*verify_value = 0.250391406439e-17*)
+
 fun get_verify_value "S" = 0.5307707005573e~4
+  | get_verify_value "W" = 0.250391406439e~17
   | get_verify_value "A" = 0.2433365309e~5
   | get_verify_value "B" = 0.180056440132e~5
   | get_verify_value "C" = 0.570674826298e~6
