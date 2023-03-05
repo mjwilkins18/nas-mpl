@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 	c referenced directly anywhere else. Padding is to avoid accidental
 	c cache problems, since all array sizes are powers of two.
 	c-------------------------------------------------------------------*/
-	static dcomplex u0[NZ][NY][NX];
+	static dcomplex u0[NZ][NY][NX];// = malloc(NZ * NY * NX * sizeof(dcomplex));
 	static dcomplex pad1[3];
 	static dcomplex u1[NZ][NY][NX];
 	static dcomplex pad2[3];
