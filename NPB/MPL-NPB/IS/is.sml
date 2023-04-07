@@ -12,7 +12,6 @@ val key_buff2 = Array.array (size_of_buffers, 0)
 
 val partial_verify_vals = Array.array (test_array_size, 0)
 
-val _ = timer_clear(0)
 
 val ffi_create_seq = _import "create_seq": int * int * int array-> unit;
 
@@ -27,7 +26,6 @@ val _  = if (CLASS <> #"S")
 	 else ()
 
 
-val _ = timer_start(0)
 
 
 fun rank(iteration : int,
@@ -191,6 +189,10 @@ fun par_loop(x: int) : unit = (
 	rank(x, lock_1, lock_2, lock_3, lock_4, pop_lock, population)
 
 	)
+
+val _ = timer_clear(0)
+
+val _ = timer_start(0)
 
 val _ = forLoop((1, max_iterations + 1), par_loop) 
 
