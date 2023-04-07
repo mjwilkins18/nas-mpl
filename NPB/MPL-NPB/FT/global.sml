@@ -28,11 +28,14 @@ val T_MAX		= 5
 
 val TIMERS_ENABLED = true
 
-fun forLoop((i : int, j : int), f : int -> unit) : unit = 
+fun Old_forLoop((i : int, j : int), f : int -> unit) : unit = 
 		if i >=j then ()
 		else (
 				f(i)
-				;	forLoop((i+1, j), f))
+				;	Old_forLoop((i+1, j), f))
+
+fun forLoop((i : int, j : int), f : int -> unit) : unit = 
+  Util.for (i,j) f
 
 (* Complex number definition and functions *)
 
