@@ -1,6 +1,12 @@
+fun Old_forLoop((i : int, j : int), f : int -> unit) : unit = 
+		if i >=j then ()
+		else (
+				f(i)
+				;	Old_forLoop((i+1, j), f))
+
 fun forLoop((i : int, j : int), f : int -> unit) : unit = 
-	if i >=j then ()
-	else ( f(i); forLoop((i+1, j), f) )
+  Util.for (i,j) f
+
 
 fun lshift n =
 	if n = 0 then 1
